@@ -2,7 +2,7 @@ name: WerewolfPlugin
 version: 1.0
 main: hoeve.plugins.werewolf.WerewolfPlugin
 authors:
-   - wbbraam
+   - Wbbraam
    - DeStilleGast
 
 description: The Werewolves of Millers Hollow in Minecraft
