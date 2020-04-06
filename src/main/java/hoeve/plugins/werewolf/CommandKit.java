@@ -80,6 +80,10 @@ public class CommandKit implements CommandExecutor {
                 werechatCommands(sender, args);
                 break;
 
+            case "rolemsg":
+                rolemsgCommands(sender, args);
+                break;
+
             case "game":
                 gameCommands(sender, args);
                 break;
@@ -89,6 +93,19 @@ public class CommandKit implements CommandExecutor {
         return true;
     }
 
+    private boolean rolemsgCommands(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage("Wrong usage of rolemsg command.");
+            return false;
+        }
+
+        if (!werewolfGame.getLeaderName().equals(sender.getName())) {
+            sender.sendMessage("Only available to game leader.");
+        }
+
+        sendToRole(args[1], String.join(" ", Arrays.copyOfRange(args, 2, args.length)));
+        return true;
+    }
 
     private boolean gameCommands(CommandSender sender, String[] args){
         if (args.length < 3) {
@@ -294,6 +311,21 @@ public class CommandKit implements CommandExecutor {
                 tellRolesToPlayers(sender);
                 break;
         }
+        return true;
+    }
+
+    private boolean sendToRole (String role, String message) {
+
+        ArrayList<String> players = werewolfGame.listPlayerNames();
+        ListIterator<String> iter = players.listIterator();
+
+        while(iter.hasNext()) {
+            String[] entries = iter.next().split(" - ");
+            if (entries[1].equals(role)) {
+                sendIfExist(entries[0], message);
+            }
+        }
+
         return true;
     }
 

@@ -27,8 +27,6 @@ public class WerewolfCardDeck {
         playerAmount = playerAmount + 1; // Always make sure there is 1 card left
 
 
-
-
         int werewolfAmount = (int) Math.ceil(playerAmount / 3);
         int commonerAmount = (playerAmount - specialCommonerAmount - werewolfAmount);
 
