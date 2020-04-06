@@ -1,0 +1,9 @@
+name: WerewolfPlugin
+version: 1.0
+main: hoeve.plugins.werewolf.WerewolfPlugin
+
+
+commands:
+   werewolf:
+      description: Play werewolf on your server
+      usage: /werewolf
