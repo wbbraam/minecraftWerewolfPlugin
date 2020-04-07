@@ -1,5 +1,10 @@
 package hoeve.plugins.werewolf.game;
 
+import com.google.common.collect.Lists;
+import hoeve.plugins.werewolf.game.roles.IRole;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -7,9 +12,10 @@ import java.util.stream.Collectors;
 
 public class WerewolfGame {
 
-    private ArrayList<WerewolfPlayer> playerList;
+    private List<WerewolfPlayer> playerList;
     private WerewolfCardDeck cardDeck;
-    private String leaderName = "";
+//    private CommandSender leaderName = Bukkit.getConsoleSender();
+    private WerewolfPlayer gameMaster = null;
 
 
     private GameStatus gamestatus;
@@ -39,14 +45,19 @@ public class WerewolfGame {
     //////////////////////////////
     // PLAYER LIST MANIPULATION //
     //////////////////////////////
-    public Boolean takeLeadership(String name) {
-        leaderName = name;
+    public Boolean takeLeadership(CommandSender newGameMaster) {
+        gameMaster = new WerewolfPlayer(newGameMaster);
         return true;
     }
 
     public String getLeaderName() {
-        return leaderName;
+        return gameMaster.getName();
     }
+
+    public WerewolfPlayer getLeaderPlayer(){
+        return gameMaster;
+    }
+
 
     /**
      * Add new Player to the game
@@ -61,7 +72,7 @@ public class WerewolfGame {
             return false;
         }
 
-        playerList.add(new WerewolfPlayer(name));
+        playerList.add(new WerewolfPlayer(Bukkit.getPlayer(name)));
         return true;
 
     }
@@ -83,8 +94,8 @@ public class WerewolfGame {
         return false;
     }
 
-    public String getPlayerRole(String name) {
-        return playerList.stream().filter(p -> p.getName().equalsIgnoreCase(name)).map(p -> p.getRole().getRoleName()).findFirst().orElse("?");
+    public IRole getPlayerRole(String name) {
+        return playerList.stream().filter(p -> p.getName().equalsIgnoreCase(name)).map(WerewolfPlayer::getRole).findFirst().orElse(null);
     }
 
     /**
@@ -100,6 +111,14 @@ public class WerewolfGame {
      */
     public List<String> listPlayerNames() {
         return playerList.stream().map(p -> p.getName() + " - " + p.getRole().getRoleName()).collect(Collectors.toList());
+    }
+
+    /**
+     * Get list of players from the game
+     * @return Copy of playerlist
+     */
+    public List<WerewolfPlayer> getPlayerList(){
+        return new ArrayList<>(playerList);
     }
 
     ///////////////////////
