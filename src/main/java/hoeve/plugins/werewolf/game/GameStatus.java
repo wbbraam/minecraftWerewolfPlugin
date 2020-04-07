@@ -7,5 +7,6 @@ public enum GameStatus {
     BURGERVOTE, // Voting is going on
     NIGHT, // Night activities
     WEREWOLFVOTE, // Voting is goig on
+    WITCHACTIVITY, // rescue and or kill [player
     ENDED // 1 player left, winner is there
 }

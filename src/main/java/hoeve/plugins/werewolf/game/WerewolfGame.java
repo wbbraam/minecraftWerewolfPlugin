@@ -1,15 +1,14 @@
 package hoeve.plugins.werewolf.game;
 
-import com.sun.rowset.internal.WebRowSetXmlWriter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Collectors;
 
 public class WerewolfGame {
 
-    private ArrayList<WerewolfPlayer> playerList = new ArrayList<WerewolfPlayer>();
-    private WerewolfCardDeck cardDeck = new WerewolfCardDeck();
+    private ArrayList<WerewolfPlayer> playerList;
+    private WerewolfCardDeck cardDeck;
     private String leaderName = "";
 
 
@@ -17,44 +16,49 @@ public class WerewolfGame {
 
     public WerewolfGame() {
         gamestatus = GameStatus.PLAYERSELECT;
-        playerList = new ArrayList<WerewolfPlayer>();
+        playerList = new ArrayList<>();
+        cardDeck = new WerewolfCardDeck();
     }
 
     ///////////////////////////
     // Game startup commands //
     ///////////////////////////
-    
-    public void assignRoles ()
-    {
+
+    /**
+     * Start the game, give every player a role
+     */
+    public void assignRoles() {
         cardDeck.resetDeck(playerList.size());
-        for (WerewolfPlayer player : playerList){
+        for (WerewolfPlayer player : playerList) {
             //System.out.println("Give card to:" + player.getName());
             //System.out.println("Cards left before dealing:"+ cardDeck.getDeckSize());
             player.setRole(cardDeck.drawCard());
         }
     }
-    
+
     //////////////////////////////
     // PLAYER LIST MANIPULATION //
     //////////////////////////////
-    public Boolean takeLeadership (String name){
+    public Boolean takeLeadership(String name) {
         leaderName = name;
         return true;
     }
 
-    public String getLeaderName (){
+    public String getLeaderName() {
         return leaderName;
     }
 
-    public Boolean addPlayer (String name){
+    /**
+     * Add new Player to the game
+     *
+     * @param name name of Player
+     * @return true if player was added to the game, false if player is already ingame
+     */
+    public Boolean addPlayer(String name) {
 
-        ListIterator<WerewolfPlayer> iter = playerList.listIterator();
-        while (iter.hasNext())
-        {
-            if(iter.next().getName().equals(name))
-            {
-                return false;
-            }
+        // check if we find name in list, found it, return false (not added)
+        if (playerList.stream().map(WerewolfPlayer::getName).anyMatch(s -> s.equalsIgnoreCase(name))) {
+            return false;
         }
 
         playerList.add(new WerewolfPlayer(name));
@@ -62,11 +66,16 @@ public class WerewolfGame {
 
     }
 
-    public Boolean removePlayer (String name){
+    /**
+     * Remove player from game
+     *
+     * @param name name of player
+     * @return true if player was removed, false if not found
+     */
+    public Boolean removePlayer(String name) {
         ListIterator<WerewolfPlayer> iter = playerList.listIterator();
-        while(iter.hasNext()) {
-            if (iter.next().getName().equals(name))
-            {
+        while (iter.hasNext()) {
+            if (iter.next().getName().equals(name)) {
                 iter.remove();
                 return true;
             }
@@ -74,64 +83,60 @@ public class WerewolfGame {
         return false;
     }
 
-    public String getPlayerRole (String name) {
-        ListIterator<WerewolfPlayer> iter = playerList.listIterator();
-        while(iter.hasNext()) {
-            WerewolfPlayer player = iter.next();
-            if (player.getName().equals(name))
-            {
-                return player.getRole();
-            }
-        }
-        return "";
+    public String getPlayerRole(String name) {
+        return playerList.stream().filter(p -> p.getName().equalsIgnoreCase(name)).map(p -> p.getRole().getRoleName()).findFirst().orElse("?");
     }
 
-    public Boolean clearPlayerList (){
-        playerList = new ArrayList<WerewolfPlayer>();
-        return true;
+    /**
+     * Clear playerlist
+     */
+    public void clearPlayerList() {
+        playerList = new ArrayList<>();
     }
 
-    public ArrayList<String> listPlayerNames (){
-        ArrayList<String> returnList = new ArrayList<String>();
-        ListIterator<WerewolfPlayer> iter = playerList.listIterator();
-        while(iter.hasNext()) {
-            WerewolfPlayer tempPlayer = iter.next();
-            returnList.add(tempPlayer.getName() + " - " + tempPlayer.getRole());
-        }
-
-        return returnList;
+    /**
+     * Get list of player with there roles
+     * @return List with playername with there role next to it
+     */
+    public List<String> listPlayerNames() {
+        return playerList.stream().map(p -> p.getName() + " - " + p.getRole().getRoleName()).collect(Collectors.toList());
     }
 
     ///////////////////////
     // GAMESTATE METHODS //
     ///////////////////////
-    public GameStatus nextStatus () {
-        switch(gamestatus) {
-            case PLAYERSELECT:
+    // TODO: Fix order
+    public GameStatus nextStatus() {
+        switch (gamestatus) {
+            case PLAYERSELECT: // adding/joining and removing players from game
                 gamestatus = GameStatus.STARTUP;
                 return GameStatus.STARTUP;
 
-            case STARTUP:
+            case STARTUP: // give every player a role
                 gamestatus = GameStatus.DAY;
                 return gamestatus;
 
-            case DAY:
+            case DAY: // Someone died (except if we just started or was healed) and we need to kill someone
                 gamestatus = GameStatus.BURGERVOTE;
                 return gamestatus;
 
-            case BURGERVOTE:
+            case BURGERVOTE: // We killed someone and were happy or not, but it is bed time
                 gamestatus = GameStatus.NIGHT;
                 return gamestatus;
 
-            case NIGHT:
+            case NIGHT: // Its night, party for the werewolves, they are going to meat, also the seer can look in its ball and look for some roles
                 gamestatus = GameStatus.WEREWOLFVOTE;
                 return gamestatus;
 
-            case WEREWOLFVOTE:
+            case WEREWOLFVOTE: // After the werewolves went to bed after a good midnight snack, the witch wakes up and checks the night to heal or kill
+                gamestatus = GameStatus.WITCHACTIVITY;
+                return gamestatus;
+
+            case WITCHACTIVITY: // Witch has done its job and went to bed, just to wake up again
                 gamestatus = GameStatus.DAY;
                 return gamestatus;
 
-            case ENDED:
+            case ENDED: // Common/villagers won or the wolves won
                 gamestatus = GameStatus.PLAYERSELECT;
                 return gamestatus;
         }
@@ -139,11 +144,17 @@ public class WerewolfGame {
         return gamestatus;
     }
 
-    public void endStatus () {
-            gamestatus = GameStatus.ENDED;
+    /**
+     * Finish the game
+     */
+    public void endStatus() {
+        gamestatus = GameStatus.ENDED;
     }
 
-    public GameStatus getStatus () {
+    /**
+     * @return Get the current status of the game
+     */
+    public GameStatus getStatus() {
         return gamestatus;
     }
 

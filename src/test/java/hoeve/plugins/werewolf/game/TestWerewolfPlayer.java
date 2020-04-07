@@ -1,15 +1,14 @@
 package hoeve.plugins.werewolf.game;
 
+import hoeve.plugins.werewolf.game.roles.WitchRole;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 
-public class TesttWerewolfPlayer {
+public class TestWerewolfPlayer {
 
     @Test
     public void givenPlayerThenAllSettersAndGettersWork ()
@@ -17,15 +16,15 @@ public class TesttWerewolfPlayer {
         WerewolfPlayer player = new WerewolfPlayer("myname");
 
         assertEquals("myname", player.getName());
-        assertEquals("None", player.getRole());
+        assertNull(player.getRole());
         assertEquals(true, player.isAlive());
 
-        player.setRole("dork");
+        player.setRole(new WitchRole());
         player.setName("anothername");
         player.setAlive(false);
 
         assertEquals("anothername", player.getName());
-        assertEquals("dork", player.getRole());
+        assertTrue("role", player.getRole() instanceof WitchRole);
         assertFalse(player.isAlive());
     }
 

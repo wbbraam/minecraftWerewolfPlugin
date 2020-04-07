@@ -1,16 +1,19 @@
 package hoeve.plugins.werewolf.game;
 
+import hoeve.plugins.werewolf.game.roles.*;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 public class WerewolfCardDeck {
-    private ArrayList<String> playingCards = new ArrayList<String>();
+    private ArrayList<IRole> playingCards = new ArrayList<>();
 
     public boolean resetDeck(Integer playerAmount){
 
-        playingCards = new ArrayList<String>();
+        playingCards = new ArrayList<>();
 
-        int specialCommonerAmount = 4;
+//        int specialCommonerAmount = 4;
         // Seer
         // Witch
         // Hunter
@@ -27,32 +30,37 @@ public class WerewolfCardDeck {
         playerAmount = playerAmount + 1; // Always make sure there is 1 card left
 
 
-        int werewolfAmount = (int) Math.ceil(playerAmount / 3);
-        int commonerAmount = (playerAmount - specialCommonerAmount - werewolfAmount);
+
+        // Special roles
+        playingCards.add(new SeeerRole());
+        playingCards.add(new WitchRole());
+        playingCards.add(new HunterRole());
+        playingCards.add(new CupidoRole());
+
+        int werewolfAmount = (int) Math.ceil(playerAmount / 3F);
+        int commonerAmount = (playerAmount - werewolfAmount - playingCards.size());
 
         for (int i = 0; i < commonerAmount; i++)
         {
-            playingCards.add("Commoner");
+            playingCards.add(new CommonRole());
         }
 
         for (int i = 0; i < werewolfAmount; i++)
         {
-            playingCards.add("Werewolf");
+            playingCards.add(new WereWolfRole());
         }
 
-        playingCards.add("Seeer");
-        playingCards.add("Witch");
-        playingCards.add("Hunter");
-        playingCards.add("Cupid");
+        //Shuffle the cards ;)
+        Collections.shuffle(playingCards);
 
         return true;
     }
 
-    public String drawCard() {
-        Random randomSeed = new Random();
+    private Random randomSeed = new Random();
+    public IRole drawCard() {
         int randomInteger = randomSeed.nextInt(playingCards.size());
 
-        String roleToReturn = playingCards.get(randomInteger);
+        IRole roleToReturn = playingCards.get(randomInteger);
         playingCards.remove(randomInteger);
 
         return roleToReturn;
@@ -61,6 +69,5 @@ public class WerewolfCardDeck {
     public int getDeckSize() {
         return playingCards.size();
     }
-
 
 }

@@ -2,17 +2,13 @@ package hoeve.plugins.werewolf;
 
 import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
-import hoeve.plugins.werewolf.game.WerewolfPlayer;
-import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.ListIterator;
 
 import static org.bukkit.Bukkit.getLogger;
@@ -154,7 +150,7 @@ public class CommandKit implements CommandExecutor {
                 werewolfGame.getStatus().equals(GameStatus.WEREWOLFVOTE))
         {
             String message = sender.getName()+" says as werewolf: "+String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-            ArrayList<String> playerList = werewolfGame.listPlayerNames();
+            List<String> playerList = werewolfGame.listPlayerNames();
             ListIterator<String> iter = playerList.listIterator();
             sendIfExist(werewolfGame.getLeaderName(), message);
             while(iter.hasNext()){
@@ -235,7 +231,7 @@ public class CommandKit implements CommandExecutor {
             return;
         }
 
-        ArrayList<String> playerroleslist = werewolfGame.listPlayerNames();
+        List<String> playerroleslist = werewolfGame.listPlayerNames();
         ListIterator<String> iter = playerroleslist.listIterator();
 
         while(iter.hasNext()){
@@ -294,7 +290,7 @@ public class CommandKit implements CommandExecutor {
                 break;
 
             case "list":
-                ArrayList<String> players = werewolfGame.listPlayerNames();
+                List<String> players = werewolfGame.listPlayerNames();
                 ListIterator<String> i = players.listIterator();
                 sender.sendMessage("Retreiving players - roles");
                 while(i.hasNext()){
@@ -316,7 +312,7 @@ public class CommandKit implements CommandExecutor {
 
     private boolean sendToRole (String role, String message) {
 
-        ArrayList<String> players = werewolfGame.listPlayerNames();
+        List<String> players = werewolfGame.listPlayerNames();
         ListIterator<String> iter = players.listIterator();
 
         while(iter.hasNext()) {

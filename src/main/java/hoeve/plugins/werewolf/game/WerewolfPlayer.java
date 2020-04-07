@@ -1,8 +1,13 @@
 package hoeve.plugins.werewolf.game;
 
+import hoeve.plugins.werewolf.game.roles.IRole;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 public class WerewolfPlayer {
+
     String name = "";
-    String role = "None";
+    IRole role = null;
     Boolean alive = true;
 
     public String getName() {
@@ -13,11 +18,11 @@ public class WerewolfPlayer {
         this.name = name;
     }
 
-    public String getRole() {
+    public IRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(IRole role) {
         this.role = role;
     }
 
@@ -30,7 +35,10 @@ public class WerewolfPlayer {
     }
 
     public WerewolfPlayer(String name) {
-
         this.name = name;
+    }
+
+    public Player getPlayer(){
+        return Bukkit.getPlayer(name);
     }
 }
