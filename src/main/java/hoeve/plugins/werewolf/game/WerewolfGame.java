@@ -1,16 +1,27 @@
 package hoeve.plugins.werewolf.game;
 
 import com.google.common.collect.Lists;
+import hoeve.plugins.werewolf.WerewolfPlugin;
+import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import hoeve.plugins.werewolf.game.roles.IRole;
+import hoeve.plugins.werewolf.game.roles.WereWolfRole;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.stream.Collectors;
 
-public class WerewolfGame {
+public class WerewolfGame implements Listener {
+
+    private WerewolfPlugin plugin;
 
     private List<WerewolfPlayer> playerList;
     private WerewolfCardDeck cardDeck;
@@ -20,10 +31,12 @@ public class WerewolfGame {
 
     private GameStatus gamestatus;
 
-    public WerewolfGame() {
+    public WerewolfGame(WerewolfPlugin plugin) {
         gamestatus = GameStatus.PLAYERSELECT;
         playerList = new ArrayList<>();
         cardDeck = new WerewolfCardDeck();
+
+        this.plugin = plugin;
     }
 
     ///////////////////////////
@@ -177,4 +190,42 @@ public class WerewolfGame {
         return gamestatus;
     }
 
+    /**
+     * Check if player is still online
+     * @param werewolfPlayer
+     * @return If player is still in the server
+     */
+    public boolean isPlayerValid(WerewolfPlayer werewolfPlayer){
+        if(werewolfPlayer.getPlayer() instanceof ConsoleCommandSender) return true;
+        if(werewolfPlayer.getPlayer() instanceof Player) {
+            Player p = (Player) werewolfPlayer.getPlayer();
+             return Bukkit.getOnlinePlayers().contains(p);
+        }
+
+        return false;
+    }
+
+
+    // Server events
+    @EventHandler
+    public void onPlayerDisconnect(PlayerQuitEvent event){
+//        Player p = event.getPlayer();
+        playerList.forEach(pl -> {
+            if(pl.getPlayer() == event.getPlayer()){
+                // Kill player, give it some time to reconnect ???
+            }
+        });
+    }
+
+
+    public void executeStartup(Runnable whenAllIsReadyJob){
+        WaitTillAllReady waitTillAllReady = plugin.setupWaiter(playerList.size(), 30, whenAllIsReadyJob);
+
+        playerList.forEach(p -> p.onGameStart(waitTillAllReady));
+    }
+
+    public void executeNewStatus() {
+        if(gamestatus == GameStatus.STARTUP) return;
+        playerList.forEach(p -> p.onGameStatusChange(gamestatus));
+    }
 }

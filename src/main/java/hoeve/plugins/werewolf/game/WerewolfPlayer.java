@@ -1,5 +1,6 @@
 package hoeve.plugins.werewolf.game;
 
+import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import hoeve.plugins.werewolf.game.roles.IRole;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -8,10 +9,9 @@ import org.bukkit.entity.Player;
 public class WerewolfPlayer {
 
 //    String name = "";
-    IRole role = null;
-    Boolean alive = true;
-
-    CommandSender playerObject;
+    private IRole role = null;
+    private Boolean alive = true;
+    private CommandSender playerObject;
 
 
     public String getName() {
@@ -44,5 +44,13 @@ public class WerewolfPlayer {
 
     public CommandSender getPlayer(){
         return playerObject;
+    }
+
+    public void onGameStart(WaitTillAllReady waiter){
+        this.getRole().onGameStart(this, waiter);
+    }
+
+    public void onGameStatusChange(GameStatus status){
+        this.getRole().onGameStateChange(this, status);
     }
 }

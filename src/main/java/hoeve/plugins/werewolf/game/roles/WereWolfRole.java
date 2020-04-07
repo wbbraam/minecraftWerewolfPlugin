@@ -1,8 +1,8 @@
 package hoeve.plugins.werewolf.game.roles;
 
 import hoeve.plugins.werewolf.game.GameStatus;
-import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
+import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 
 /**
  * Created by DeStilleGast 7-4-2020
@@ -15,12 +15,12 @@ public class WereWolfRole implements IRole {
     }
 
     @Override
-    public void onGameStart(WerewolfGame game) {
+    public void onGameStart(WerewolfPlayer player, WaitTillAllReady game) {
         // tell wolfs to kill all the villagers
     }
 
     @Override
-    public void onGameStateChange(GameStatus status) {
+    public void onGameStateChange(WerewolfPlayer player, GameStatus status) {
         // check if it is night, setup vote
     }
 

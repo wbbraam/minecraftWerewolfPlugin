@@ -21,9 +21,11 @@ public class CommandKit implements CommandExecutor {
     // This method is called, when somebody uses our command
     //@Override
     private final WerewolfGame werewolfGame;
+    private final WerewolfPlugin plugin;
 
-    public CommandKit(WerewolfGame werewolfGame) {
+    public CommandKit(WerewolfGame werewolfGame, WerewolfPlugin plugin) {
         this.werewolfGame = werewolfGame;
+        this.plugin = plugin;
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -199,17 +201,31 @@ public class CommandKit implements CommandExecutor {
                 sender.sendMessage("Current gamestate: " + werewolfGame.getStatus().toString());
                 break;
 
-            case "next":
-                werewolfGame.nextStatus();
-                sender.sendMessage("New gamestate: " + werewolfGame.getStatus().toString());
-                if (werewolfGame.getStatus().equals(GameStatus.STARTUP)) {
+            case "start":
+                if(werewolfGame.getStatus() == GameStatus.PLAYERSELECT) {
+                    werewolfGame.nextStatus();
                     sender.sendMessage("Moving into starttup state, assigning roles.");
                     werewolfGame.assignRoles();
                     sender.sendMessage("Roles assigned, sending roles to players");
 
                     tellRolesToPlayers(sender);
 
+                    werewolfGame.executeStartup(() -> { sender.sendMessage("Everyone has been set ready, players that are not marked as ready will be kicked out of the game"); });
+
+                }else{
+                    sender.sendMessage("Stop, we are already started !");
                 }
+                break;
+
+
+            case "next":
+                if(werewolfGame.getStatus() == GameStatus.STARTUP){
+                    sender.sendMessage("Stop, we need to start first !");
+                    break;
+                }
+                werewolfGame.nextStatus();
+                sender.sendMessage("New gamestate: " + werewolfGame.getStatus().toString());
+                werewolfGame.executeNewStatus();
                 break;
 
             case "end":
@@ -318,14 +334,17 @@ public class CommandKit implements CommandExecutor {
     }
 
     private boolean sendIfExist(WerewolfPlayer gamePlayer, String message) {
-        CommandSender player = gamePlayer.getPlayer();
-        if (player != null) {
-            player.sendMessage(message);
-        } else {
-            getLogger().warning("Requested to send a mesage to non existing player: " + gamePlayer.getName());
-            getLogger().warning("message: " + message);
+        if(werewolfGame.isPlayerValid(gamePlayer)) {
+            CommandSender player = gamePlayer.getPlayer();
+            if (player != null) {
+                plugin.tellPlayer(player, message);
+            } else {
+                getLogger().warning("Requested to send a message to non existing player: " + gamePlayer.getName());
+                getLogger().warning("message: " + message);
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 
 }
