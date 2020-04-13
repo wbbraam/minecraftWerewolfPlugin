@@ -15,7 +15,7 @@ public class CommonRole implements IRole {
 
     @Override
     public String getRoleName() {
-        return "Villager";
+        return ChatColor.GREEN + "Villager";
     }
 
     @Override
@@ -32,6 +32,10 @@ public class CommonRole implements IRole {
     @Override
     public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
         // check if state is VOTE, display vote screen
+        switch (status){
+            case STARTUP:
+                game.notifyPlayer(player, "You are a " + getRoleName());
+        }
     }
 
     @Override

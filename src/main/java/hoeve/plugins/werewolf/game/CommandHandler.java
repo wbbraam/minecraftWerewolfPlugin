@@ -5,6 +5,7 @@ import hoeve.plugins.werewolf.game.actions.NearbySelector;
 import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
 import hoeve.plugins.werewolf.game.interfaces.OracleScreen;
 import hoeve.plugins.werewolf.game.interfaces.WerewolfScreen;
+import hoeve.plugins.werewolf.game.roles.WereWolfRole;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -81,13 +82,15 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
                 case "start":
                     werewolfGame.startGame();
+
 //
-//                    if(nearbySelector == null){
-//                        nearbySelector = new NearbySelector(werewolfGame, WereWolfRole.class);
-//                        nearbySelector.start();
-//                    }else{
-//                        nearbySelector.stop();
-//                    }
+                    if(nearbySelector == null){
+                        nearbySelector = new NearbySelector(werewolfGame, WereWolfRole.class);
+                        nearbySelector.start();
+                    }else{
+                        nearbySelector.stop();
+                        werewolfGame.notifyGameMaster(nearbySelector.getTopSelectedPlayer().getName() + " was selected");
+                    }
 
                     werewolfGame.centerPlayers();
 

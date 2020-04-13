@@ -5,6 +5,7 @@ import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
+import org.bukkit.ChatColor;
 
 /**
  * Created by DeStilleGast 7-4-2020
@@ -12,7 +13,7 @@ import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 public class SeeerRole implements IRole {
     @Override
     public String getRoleName() {
-        return "Seer";
+        return ChatColor.AQUA + "Oracle";
     }
 
     @Override
@@ -23,6 +24,12 @@ public class SeeerRole implements IRole {
     @Override
     public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
         // if night, ask player to see a role of a player (DO NOT PUT IN CHAT)
+
+        switch (status) {
+            case STARTUP:
+                game.notifyPlayer(player, "You are the " + getRoleName());
+
+        }
     }
 
     @Override

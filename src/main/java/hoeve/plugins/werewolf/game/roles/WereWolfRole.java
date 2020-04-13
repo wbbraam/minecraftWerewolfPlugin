@@ -5,6 +5,7 @@ import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
+import org.bukkit.ChatColor;
 
 /**
  * Created by DeStilleGast 7-4-2020
@@ -13,7 +14,7 @@ public class WereWolfRole implements IRole {
 
     @Override
     public String getRoleName() {
-        return "Werewolf";
+        return ChatColor.DARK_RED + "Werewolf";
     }
 
     @Override
@@ -24,6 +25,12 @@ public class WereWolfRole implements IRole {
     @Override
     public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
         // check if it is night, setup vote
+
+        switch (status) {
+            case STARTUP:
+                game.notifyPlayer(player, "You are a " + getRoleName());
+
+        }
     }
 
 

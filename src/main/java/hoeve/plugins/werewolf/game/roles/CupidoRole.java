@@ -6,6 +6,7 @@ import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
+import org.bukkit.ChatColor;
 
 /**
  * Created by DeStilleGast 7-4-2020
@@ -14,7 +15,7 @@ public class CupidoRole implements IRole {
 
     @Override
     public String getRoleName() {
-        return "Cupido";
+        return ChatColor.LIGHT_PURPLE + "Cupido";
     }
 
     @Override
@@ -31,7 +32,11 @@ public class CupidoRole implements IRole {
 
     @Override
     public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
+        switch (status) {
+            case STARTUP:
+                game.notifyPlayer(player, "You are " + getRoleName());
 
+        }
     }
 
     @Override

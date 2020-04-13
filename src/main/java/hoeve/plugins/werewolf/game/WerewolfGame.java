@@ -67,6 +67,9 @@ public class WerewolfGame implements Listener {
 
         gamestatus = GameStatus.STARTUP;
         plugin.getScoreboardManager().updateScoreboards(this);
+        centerPlayers();
+
+        executeNewStatus();
     }
 
     //////////////////////////////
@@ -268,7 +271,7 @@ public class WerewolfGame implements Listener {
     }
 
     public void centerPlayers(){
-        int size = 25;//this.playerList.size();
+        int size = this.playerList.size();
 
         double theta = ((Math.PI * 2) / size);
         Location center = gameMaster.getPlayer().getLocation();
@@ -290,6 +293,9 @@ public class WerewolfGame implements Listener {
 
 
         for(int i = 0; i < size; i++){
+            WerewolfPlayer player = this.playerList.get(i);
+            if(!player.isAlive()) continue;
+
             double angle = (theta * i);
 
             int Radius = Math.max(size / 3, 3);
@@ -304,14 +310,14 @@ public class WerewolfGame implements Listener {
 
             newPos.setDirection((center.clone().subtract(newPos.clone()).toVector()).normalize()); // look at venter
 
-            ArmorStand stand = (ArmorStand) center.getWorld().spawnEntity(newPos, EntityType.ARMOR_STAND);
+//            ArmorStand stand = (ArmorStand) center.getWorld().spawnEntity(newPos, EntityType.ARMOR_STAND);
 //            stand.setGravity(false);
-            stand.setCustomNameVisible(true);
-            stand.setCustomName("Player spawn #" + (i+1));
-            stand.setCollidable(false);
+//            stand.setCustomNameVisible(true);
+//            stand.setCustomName("Player spawn #" + (i+1));
+//            stand.setCollidable(false);
 
 //            this.armorStandArrayList.add(stand);
-            stand.teleport(newPos, PlayerTeleportEvent.TeleportCause.PLUGIN);
+            player.getPlayer().teleport(newPos, PlayerTeleportEvent.TeleportCause.PLUGIN);
         }
     }
 

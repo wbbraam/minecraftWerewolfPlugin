@@ -5,6 +5,7 @@ import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.roles.IRole;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -140,7 +141,13 @@ public class NearbySelector implements Runnable, Listener {
     @EventHandler
     public void onAttemptToMove(PlayerMoveEvent event){
         Player p = event.getPlayer();
-        if(!selectors.contains(p)) event.setCancelled(true);
+        if(!selectors.contains(p)) { // is it one of the targets that wants to run away, deny it
+            if(event.getFrom() != event.getTo()){
+                p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 100f, 1f);
+
+                event.setCancelled(true);
+            }
+        }
     }
 }
 

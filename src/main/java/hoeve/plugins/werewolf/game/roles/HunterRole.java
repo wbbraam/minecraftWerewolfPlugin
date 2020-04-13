@@ -5,6 +5,7 @@ import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
+import org.bukkit.ChatColor;
 
 /**
  * Created by DeStilleGast 7-4-2020
@@ -12,7 +13,7 @@ import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 public class HunterRole implements IRole {
     @Override
     public String getRoleName() {
-        return "Hunter";
+        return ChatColor.GOLD + "Hunter";
     }
 
     @Override
@@ -22,7 +23,11 @@ public class HunterRole implements IRole {
 
     @Override
     public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
+        switch (status) {
+            case STARTUP:
+                game.notifyPlayer(player, "You are a " + getRoleName());
 
+        }
     }
 
     @Override
