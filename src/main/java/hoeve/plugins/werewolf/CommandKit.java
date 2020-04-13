@@ -270,7 +270,7 @@ public class CommandKit implements CommandExecutor {
                 if(werewolfGame.getStatus() == GameStatus.PLAYERSELECT) {
                     werewolfGame.nextStatus();
                     sender.sendMessage("Moving into starttup state, assigning roles.");
-                    werewolfGame.assignRoles();
+                    werewolfGame.startGame();
                     sender.sendMessage("Roles assigned, sending roles to players");
 
                     tellRolesToPlayers(sender);

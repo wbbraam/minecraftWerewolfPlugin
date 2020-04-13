@@ -6,6 +6,10 @@ import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.roles.IRole;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
@@ -20,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Created by DeStilleGast 13-4-2020
  */
-public class NearbySelector implements Runnable {
+public class NearbySelector implements Runnable, Listener {
 
     private BukkitTask task;
     private WerewolfGame game;
@@ -52,19 +56,52 @@ public class NearbySelector implements Runnable {
             }
         }
 
+        game.centerPlayers();
         task = Bukkit.getScheduler().runTaskTimer(game.getPlugin(), this, 5, 5);
+        Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
     }
 
     public void stop() {
         Bukkit.getScheduler().cancelTask(task.getTaskId());
+        HandlerList.unregisterAll(this); // https://www.spigotmc.org/wiki/using-the-event-api/
+
+        game.centerPlayers();
 
         List<Player> playerList = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
         for (Player player : playerList) {
+            player.removePotionEffect(PotionEffectType.GLOWING);
+
             for (Player thisPlayer : playerList) {
                 player.showPlayer(game.getPlugin(), thisPlayer);
-                player.removePotionEffect(PotionEffectType.GLOWING);
             }
         }
+    }
+
+    public List<Player> getSelectedPlayers(){
+        return this.selected.values().stream().distinct().collect(Collectors.toList());
+    }
+
+    // Could be better, for now this is it
+    public Player getTopSelectedPlayer(){
+        Map<Player, Integer> countMap = new HashMap<>();
+        for (Player p : selected.values()){
+            countMap.put(p, countMap.getOrDefault(p, 0) + 1);
+        };
+
+        int currentCount = 0;
+        Player mostCounts = null;
+        for(Player key : countMap.keySet()){
+            if(countMap.get(key) > currentCount){
+                mostCounts = key;
+                currentCount = countMap.get(key);
+            }
+        }
+
+        return mostCounts;
+    }
+
+    public Map<Player, Player> getSelectedMap(){
+        return this.selected;
     }
 
 
@@ -97,6 +134,13 @@ public class NearbySelector implements Runnable {
         if (p1.getLocation().getWorld() != p2.getLocation().getWorld()) return Double.MAX_VALUE;
 
         return p1.getLocation().distanceSquared(p2.getLocation());
+    }
+
+    // prevent players from running await when a selector is active
+    @EventHandler
+    public void onAttemptToMove(PlayerMoveEvent event){
+        Player p = event.getPlayer();
+        if(!selectors.contains(p)) event.setCancelled(true);
     }
 }
 

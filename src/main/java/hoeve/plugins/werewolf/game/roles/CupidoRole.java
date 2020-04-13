@@ -1,30 +1,41 @@
 package hoeve.plugins.werewolf.game.roles;
 
+import hoeve.plugins.werewolf.game.EnumDeadType;
 import hoeve.plugins.werewolf.game.GameStatus;
+import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
+import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
 
 /**
  * Created by DeStilleGast 7-4-2020
  */
 public class CupidoRole implements IRole {
+
     @Override
     public String getRoleName() {
         return "Cupido";
     }
 
     @Override
-    public void onGameStart(WerewolfPlayer player, WaitTillAllReady game) {
-        // show screen for match 2 players
+    public WaitTillAllReady firstNight(WerewolfGame game, WerewolfPlayer player, WaitTillAllReady waiter) {
+        CupidoScreen cupidoScreen = new CupidoScreen(game);
+        WaitTillAllReady customWaiter = game.getPlugin().setupWaiter(1, 30, "Waiting for to shoot his arrows [%time%]", () -> {
+           cupidoScreen.selectRandom(player.getPlayer());
+           waiter.markReady(player);
+        });
+        cupidoScreen.prepareInternalInventory(waiter);
+
+        return customWaiter;
     }
 
     @Override
-    public void onGameStateChange(WerewolfPlayer player, GameStatus status) {
+    public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
 
     }
 
     @Override
-    public void onDead(WerewolfPlayer killedBy) {
+    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
         // maybe funny message about a couple if they are still alive, if dead sad message about how he lost
     }
 }

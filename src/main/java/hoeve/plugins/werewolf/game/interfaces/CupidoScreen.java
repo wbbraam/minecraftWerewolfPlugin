@@ -145,7 +145,7 @@ public class CupidoScreen extends BaseScreen {
                 p.closeInventory();
             }
 
-            List<WerewolfPlayer> playerList = game.getPlayerList().stream().filter(pl -> !(pl.getRole() instanceof CupidoRole)).collect(Collectors.toList());
+            List<WerewolfPlayer> playerList = game.getPlayerList().stream().filter(pl -> p != pl.getPlayer()    /*!(pl.getRole() instanceof CupidoRole)*/).collect(Collectors.toList());
             Collections.shuffle(playerList);
 
             selectPlayers(playerList.get(0), playerList.get(1));

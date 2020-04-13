@@ -48,24 +48,23 @@ public class WerewolfPlayer {
         return playerObject;
     }
 
-    public void onGameStart(WaitTillAllReady waiter){
-        this.getRole().onGameStart(this, waiter);
+//    public void onGameStart(WaitTillAllReady waiter){
+//        this.getRole().onGameStart(this, waiter);
+//    }
+
+    public void onGameStatusChange(WerewolfGame game, GameStatus status){
+        this.getRole().onGameStateChange(game, this, status);
     }
 
-    public void onGameStatusChange(GameStatus status){
-        this.getRole().onGameStateChange(this, status);
-    }
-
-    public void onDead(WerewolfPlayer killedBy){
+    public void onDead(WerewolfGame game, WerewolfPlayer killedBy, EnumDeadType deadType){
         if(!this.isAlive()) return;
+        this.alive = false;
 
-        this.getRole().onDead(killedBy);
+        this.getRole().onDead(game, this, killedBy, deadType);
 
         if(this.lover != null){
-            this.lover.onDead(this);
+            this.lover.onDead(game,this, EnumDeadType.LOVE);
         }
-
-        this.alive = false;
     }
 
     public void setLover(WerewolfPlayer player) {

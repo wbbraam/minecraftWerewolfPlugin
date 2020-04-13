@@ -1,14 +1,10 @@
 package hoeve.plugins.werewolf.game;
 
-import com.google.common.collect.Lists;
 import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.actions.NearbySelector;
-import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
 import hoeve.plugins.werewolf.game.interfaces.OracleScreen;
 import hoeve.plugins.werewolf.game.interfaces.WerewolfScreen;
-import hoeve.plugins.werewolf.game.roles.WereWolfRole;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -84,14 +80,16 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                     }
 
                 case "start":
-                    werewolfGame.assignRoles();
+                    werewolfGame.startGame();
+//
+//                    if(nearbySelector == null){
+//                        nearbySelector = new NearbySelector(werewolfGame, WereWolfRole.class);
+//                        nearbySelector.start();
+//                    }else{
+//                        nearbySelector.stop();
+//                    }
 
-                    if(nearbySelector == null){
-                        nearbySelector = new NearbySelector(werewolfGame, WereWolfRole.class);
-                        nearbySelector.start();
-                    }else{
-                        nearbySelector.stop();
-                    }
+                    werewolfGame.centerPlayers();
 
 
 //                    if(oracleScreen == null) {
@@ -107,6 +105,9 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 //                    wwScreen.prepareInventory(werewolfGame);
 
 //                    werewolfGame.getPlayerList().forEach(w -> wwScreen.openInventory((Player) w.getPlayer()));
+                    break;
+                case "center":
+                    werewolfGame.centerPlayers();
             }
 
 

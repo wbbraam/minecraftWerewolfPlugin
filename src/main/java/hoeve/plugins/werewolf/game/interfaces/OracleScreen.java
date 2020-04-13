@@ -15,11 +15,18 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 /**
  * Created by DeStilleGast 13-4-2020
+ * @deprecated - Use nearbySelector to keep it more fun
  */
+
+@Deprecated
 public class OracleScreen extends BaseScreen {
 
     private WerewolfGame game;
 
+    /**
+     * @deprecated Use nearbySelector to keep more fun
+     */
+    @Deprecated
     public OracleScreen(WerewolfGame game) {
         super(game, "Magic glass ball", (int) Math.ceil(game.getPlayerList().size() / 9D));
         this.game = game;
@@ -36,7 +43,8 @@ public class OracleScreen extends BaseScreen {
 
                 player.closeInventory();
                 game.notifyGameMaster("Oracle has selected to see the role of " + wolfPlayer.getPlayer().getName());
-                game.notifyPlayer(player, wolfPlayer.getPlayer().getName() + " is a " + wolfPlayer.getRole().getRoleName());
+//                game.notifyPlayer(player, wolfPlayer.getPlayer().getName() + " is a " + wolfPlayer.getRole().getRoleName());
+                player.sendTitle(wolfPlayer.getRole().getRoleName(), "Your glass ball is fading this word", 10, 70, 20);
             }
         }
     }

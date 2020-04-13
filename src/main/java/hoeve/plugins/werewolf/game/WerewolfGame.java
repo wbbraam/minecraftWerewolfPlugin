@@ -7,11 +7,16 @@ import hoeve.plugins.werewolf.game.roles.CupidoRole;
 import hoeve.plugins.werewolf.game.roles.IRole;
 import hoeve.plugins.werewolf.game.roles.WereWolfRole;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +53,7 @@ public class WerewolfGame implements Listener {
     /**
      * Start the game, give every player a role
      */
-    public void assignRoles() {
+    public void startGame() {
 //        cardDeck.resetDeck(playerList.size());
 //        for (WerewolfPlayer player : playerList) {
 //            //System.out.println("Give card to:" + player.getName());
@@ -59,6 +64,9 @@ public class WerewolfGame implements Listener {
         playerList.get(0).setRole(new WereWolfRole());
         playerList.get(1).setRole(new CommonRole());
         playerList.get(2).setRole(new CupidoRole());
+
+        gamestatus = GameStatus.STARTUP;
+        plugin.getScoreboardManager().updateScoreboards(this);
     }
 
     //////////////////////////////
@@ -236,14 +244,14 @@ public class WerewolfGame implements Listener {
 
 
     public void executeStartup(Runnable whenAllIsReadyJob){
-        WaitTillAllReady waitTillAllReady = plugin.setupWaiter(playerList.size(), 30, "Letting everyone checking out there roles", whenAllIsReadyJob);
+//        WaitTillAllReady waitTillAllReady = plugin.setupWaiter(playerList.size(), 30, "Letting everyone checking out there roles", whenAllIsReadyJob);
 
-        playerList.forEach(p -> p.onGameStart(waitTillAllReady));
+//        playerList.forEach(p -> p.onGameStart(waitTillAllReady));
     }
 
     public void executeNewStatus() {
         if(gamestatus == GameStatus.STARTUP) return;
-        playerList.forEach(p -> p.onGameStatusChange(gamestatus));
+        playerList.forEach(p -> p.onGameStatusChange(this, gamestatus));
     }
 
     public WerewolfPlugin getPlugin(){
@@ -252,10 +260,64 @@ public class WerewolfGame implements Listener {
 
     // todo formatting
     public void notifyPlayer(Player player, String message) {
-        player.sendMessage(message);
+        player.sendMessage("[Game] " + message);
     }
 
     public void notifyPlayer(WerewolfPlayer player, String message){
         notifyPlayer(player.getPlayer(), message);
+    }
+
+    public void centerPlayers(){
+        int size = 25;//this.playerList.size();
+
+        double theta = ((Math.PI * 2) / size);
+        Location center = gameMaster.getPlayer().getLocation();
+
+        Location gameMasterLocation = gameMaster.getPlayer().getLocation();
+
+        int radius = 15;
+        for(int x = gameMasterLocation.getBlockX() - radius; x <= gameMasterLocation.getBlockX() + radius; x++) {
+            for(int y = gameMasterLocation.getBlockY() - radius; y <= gameMasterLocation.getBlockY() + radius; y++) {
+                for(int z = gameMasterLocation.getBlockZ() - radius; z <= gameMasterLocation.getBlockZ() + radius; z++) {
+//                    blocks.add(location.getWorld().getBlockAt(x, y, z));
+                    if(gameMasterLocation.getWorld().getBlockAt(x, y, z).getType() == Material.CAMPFIRE){
+                        center = new Location(gameMasterLocation.getWorld(), x, y, z).add(0.5, 0, 0.5);
+                    }
+                }
+            }
+        }
+
+
+
+        for(int i = 0; i < size; i++){
+            double angle = (theta * i);
+
+            int Radius = Math.max(size / 3, 3);
+            double X = Radius * Math.cos(angle);
+            double Z = Radius * Math.sin(angle);
+
+            Location newPos = center.clone().add(X, 0, Z);
+
+            while(gameMasterLocation.getWorld().getBlockAt(newPos).getType() != Material.AIR){
+                newPos = newPos.add(0, 0.5, 0);
+            }
+
+            newPos.setDirection((center.clone().subtract(newPos.clone()).toVector()).normalize()); // look at venter
+
+            ArmorStand stand = (ArmorStand) center.getWorld().spawnEntity(newPos, EntityType.ARMOR_STAND);
+//            stand.setGravity(false);
+            stand.setCustomNameVisible(true);
+            stand.setCustomName("Player spawn #" + (i+1));
+            stand.setCollidable(false);
+
+//            this.armorStandArrayList.add(stand);
+            stand.teleport(newPos, PlayerTeleportEvent.TeleportCause.PLUGIN);
+        }
+    }
+
+    public void notifyRole(Class<? extends IRole> roleClass, String message) {
+        for (WerewolfPlayer p : this.getPlayersByRole(roleClass)){
+            notifyPlayer(p, message);
+        }
     }
 }

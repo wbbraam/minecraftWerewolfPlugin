@@ -1,6 +1,8 @@
 package hoeve.plugins.werewolf.game.roles;
 
+import hoeve.plugins.werewolf.game.EnumDeadType;
 import hoeve.plugins.werewolf.game.GameStatus;
+import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 
@@ -14,17 +16,19 @@ public class HunterRole implements IRole {
     }
 
     @Override
-    public void onGameStart(WerewolfPlayer player, WaitTillAllReady game) {
+    public WaitTillAllReady firstNight(WerewolfGame game, WerewolfPlayer player, WaitTillAllReady waiter) {
+        return null;
+    }
+
+    @Override
+    public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
 
     }
 
     @Override
-    public void onGameStateChange(WerewolfPlayer player, GameStatus status) {
-
-    }
-
-    @Override
-    public void onDead(WerewolfPlayer killedBy) {
-        // take killer with him
+    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
+        if(deadType == EnumDeadType.VOTE || deadType == EnumDeadType.WOLVES){
+            // let him kill someone (bow and arrow)
+        }
     }
 }

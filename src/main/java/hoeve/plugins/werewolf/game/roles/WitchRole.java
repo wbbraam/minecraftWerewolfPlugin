@@ -1,6 +1,8 @@
 package hoeve.plugins.werewolf.game.roles;
 
+import hoeve.plugins.werewolf.game.EnumDeadType;
 import hoeve.plugins.werewolf.game.GameStatus;
+import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 
@@ -14,18 +16,18 @@ public class WitchRole implements IRole {
     }
 
     @Override
-    public void onGameStart(WerewolfPlayer player, WaitTillAllReady game) {
-        // basicly the same as Common
+    public WaitTillAllReady firstNight(WerewolfGame game, WerewolfPlayer player, WaitTillAllReady waiter) {
+        return null;
     }
 
     @Override
-    public void onGameStateChange(WerewolfPlayer player, GameStatus status) {
+    public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
         // if it is getting day, ask if player wants to rescue that player
         // next ask if player wants to kill someone
     }
 
     @Override
-    public void onDead(WerewolfPlayer killedBy) {
+    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
         // drop potions ?
     }
 }
