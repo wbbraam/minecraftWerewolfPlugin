@@ -1,6 +1,7 @@
 package hoeve.plugins.werewolf.game.helpers;
 
 import hoeve.plugins.werewolf.WerewolfPlugin;
+import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import org.bukkit.Bukkit;
 
@@ -12,17 +13,20 @@ import java.util.List;
  */
 public class WaitTillAllReady {
 
+    private BossBarTimer bossBarTimer;
+
     private int waitingForAmount;
     private Runnable whenAllIsSet;
     private List<WerewolfPlayer> markedPlayers;
 
     private boolean hasRun = false;
 
-    public WaitTillAllReady(int waitingForAmount, int waitTime, Runnable whenAllIsSet) {
+    public WaitTillAllReady(BossBarTimer bossBarTimer, int waitingForAmount, int waitTime, Runnable whenAllIsSet) {
+        this.bossBarTimer = bossBarTimer;
         this.waitingForAmount = waitingForAmount;
         this.whenAllIsSet = whenAllIsSet;
 
-        markedPlayers = new ArrayList<>();
+        this.markedPlayers = new ArrayList<>();
 
 
     }
@@ -44,8 +48,13 @@ public class WaitTillAllReady {
      */
     public void allSet() {
         if (!hasRun) {
+            bossBarTimer.cleanUp();
             whenAllIsSet.run();
         }
         hasRun = true;
+    }
+
+    public boolean hasRun(){
+        return hasRun;
     }
 }

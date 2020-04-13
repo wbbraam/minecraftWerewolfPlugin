@@ -11,7 +11,9 @@ public class WerewolfPlayer {
 //    String name = "";
     private IRole role = null;
     private Boolean alive = true;
-    private CommandSender playerObject;
+    private Player playerObject;
+
+    private WerewolfPlayer lover;
 
 
     public String getName() {
@@ -38,11 +40,11 @@ public class WerewolfPlayer {
         this.alive = alive;
     }
 
-    public WerewolfPlayer(CommandSender player) {
+    public WerewolfPlayer(Player player) {
         this.playerObject = player;
     }
 
-    public CommandSender getPlayer(){
+    public Player getPlayer(){
         return playerObject;
     }
 
@@ -52,5 +54,21 @@ public class WerewolfPlayer {
 
     public void onGameStatusChange(GameStatus status){
         this.getRole().onGameStateChange(this, status);
+    }
+
+    public void onDead(WerewolfPlayer killedBy){
+        if(!this.isAlive()) return;
+
+        this.getRole().onDead(killedBy);
+
+        if(this.lover != null){
+            this.lover.onDead(this);
+        }
+
+        this.alive = false;
+    }
+
+    public void setLover(WerewolfPlayer player) {
+        this.lover = player;
     }
 }

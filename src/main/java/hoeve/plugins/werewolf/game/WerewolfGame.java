@@ -1,12 +1,12 @@
 package hoeve.plugins.werewolf.game;
 
-import com.google.common.collect.Lists;
 import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
+import hoeve.plugins.werewolf.game.roles.CommonRole;
+import hoeve.plugins.werewolf.game.roles.CupidoRole;
 import hoeve.plugins.werewolf.game.roles.IRole;
 import hoeve.plugins.werewolf.game.roles.WereWolfRole;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,9 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
-import java.util.EventListener;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.stream.Collectors;
 
 public class WerewolfGame implements Listener {
@@ -31,10 +29,14 @@ public class WerewolfGame implements Listener {
 
     private GameStatus gamestatus;
 
-    public WerewolfGame(WerewolfPlugin plugin) {
+    public WerewolfGame(){
         gamestatus = GameStatus.PLAYERSELECT;
         playerList = new ArrayList<>();
         cardDeck = new WerewolfCardDeck();
+    }
+
+    public WerewolfGame(WerewolfPlugin plugin) {
+        this();
 
         this.plugin = plugin;
     }
@@ -47,45 +49,53 @@ public class WerewolfGame implements Listener {
      * Start the game, give every player a role
      */
     public void assignRoles() {
-        cardDeck.resetDeck(playerList.size());
-        for (WerewolfPlayer player : playerList) {
-            //System.out.println("Give card to:" + player.getName());
-            //System.out.println("Cards left before dealing:"+ cardDeck.getDeckSize());
-            player.setRole(cardDeck.drawCard());
-        }
+//        cardDeck.resetDeck(playerList.size());
+//        for (WerewolfPlayer player : playerList) {
+//            //System.out.println("Give card to:" + player.getName());
+//            //System.out.println("Cards left before dealing:"+ cardDeck.getDeckSize());
+//            player.setRole(cardDeck.drawCard());
+//        }
+
+        playerList.get(0).setRole(new WereWolfRole());
+        playerList.get(1).setRole(new CommonRole());
+        playerList.get(2).setRole(new CupidoRole());
     }
 
     //////////////////////////////
     // PLAYER LIST MANIPULATION //
     //////////////////////////////
-    public Boolean takeLeadership(CommandSender newGameMaster) {
+    public void setGameMaster(Player newGameMaster) {
         gameMaster = new WerewolfPlayer(newGameMaster);
-        return true;
+        plugin.getScoreboardManager().addPlayer(newGameMaster);
     }
 
     public String getLeaderName() {
         return gameMaster.getName();
     }
 
-    public WerewolfPlayer getLeaderPlayer(){
+    public WerewolfPlayer getGameMaster(){
         return gameMaster;
     }
 
+    //TODO: message formatting
+    public void notifyGameMaster(String message){
+        gameMaster.getPlayer().sendMessage(message);
+    }
 
     /**
      * Add new Player to the game
      *
-     * @param name name of Player
+     * @param player name of Player
      * @return true if player was added to the game, false if player is already ingame
      */
-    public Boolean addPlayer(String name) {
-
+    public Boolean addPlayer(Player player) {
         // check if we find name in list, found it, return false (not added)
-        if (playerList.stream().map(WerewolfPlayer::getName).anyMatch(s -> s.equalsIgnoreCase(name))) {
+        if (playerList.stream().map(WerewolfPlayer::getPlayer).anyMatch(s -> s.equals(player))) {
             return false;
         }
 
-        playerList.add(new WerewolfPlayer(Bukkit.getPlayer(name)));
+        playerList.add(new WerewolfPlayer(player));
+        plugin.getScoreboardManager().addPlayer(player);
         return true;
 
     }
@@ -93,22 +103,30 @@ public class WerewolfGame implements Listener {
     /**
      * Remove player from game
      *
-     * @param name name of player
+     * @param player player
      * @return true if player was removed, false if not found
      */
-    public Boolean removePlayer(String name) {
-        ListIterator<WerewolfPlayer> iter = playerList.listIterator();
-        while (iter.hasNext()) {
-            if (iter.next().getName().equals(name)) {
-                iter.remove();
-                return true;
-            }
-        }
-        return false;
+    public Boolean removePlayer(Player player) {
+        WerewolfPlayer wwPlayer = playerList.stream().filter(w -> w.getPlayer() == player).findFirst().orElse(null);
+
+        plugin.getScoreboardManager().removePlayer(player);
+        return playerList.remove(wwPlayer);
+    }
+
+    public WerewolfPlayer getPlayer(Player player){
+        return playerList.stream().filter(p -> p.getPlayer() == player).findFirst().orElse(null);
+    }
+
+    public WerewolfPlayer getPlayerByName(String name) {
+        return playerList.stream().filter(p -> p.getPlayer().getName().equals(name)).findFirst().orElse(null);
     }
 
     public IRole getPlayerRole(String name) {
         return playerList.stream().filter(p -> p.getName().equalsIgnoreCase(name)).map(WerewolfPlayer::getRole).findFirst().orElse(null);
+    }
+
+    public List<WerewolfPlayer> getPlayersByRole(Class<? extends IRole> roleClass) {
+        return playerList.stream().filter(p -> p.getRole().getClass() == roleClass).collect(Collectors.toList());
     }
 
     /**
@@ -179,7 +197,7 @@ public class WerewolfGame implements Listener {
     /**
      * Finish the game
      */
-    public void endStatus() {
+    public void finishGame() {
         gamestatus = GameStatus.ENDED;
     }
 
@@ -197,8 +215,8 @@ public class WerewolfGame implements Listener {
      */
     public boolean isPlayerValid(WerewolfPlayer werewolfPlayer){
         if(werewolfPlayer.getPlayer() instanceof ConsoleCommandSender) return true;
-        if(werewolfPlayer.getPlayer() instanceof Player) {
-            Player p = (Player) werewolfPlayer.getPlayer();
+        if(werewolfPlayer.getPlayer() != null) {
+            Player p = werewolfPlayer.getPlayer();
              return Bukkit.getOnlinePlayers().contains(p);
         }
 
@@ -210,16 +228,15 @@ public class WerewolfGame implements Listener {
     @EventHandler
     public void onPlayerDisconnect(PlayerQuitEvent event){
 //        Player p = event.getPlayer();
-        playerList.forEach(pl -> {
-            if(pl.getPlayer() == event.getPlayer()){
-                // Kill player, give it some time to reconnect ???
-            }
-        });
+        WerewolfPlayer leftPlayer = getPlayer(event.getPlayer());
+        if(leftPlayer != null){
+            playerList.remove(leftPlayer);
+        }
     }
 
 
     public void executeStartup(Runnable whenAllIsReadyJob){
-        WaitTillAllReady waitTillAllReady = plugin.setupWaiter(playerList.size(), 30, whenAllIsReadyJob);
+        WaitTillAllReady waitTillAllReady = plugin.setupWaiter(playerList.size(), 30, "Letting everyone checking out there roles", whenAllIsReadyJob);
 
         playerList.forEach(p -> p.onGameStart(waitTillAllReady));
     }
@@ -227,5 +244,18 @@ public class WerewolfGame implements Listener {
     public void executeNewStatus() {
         if(gamestatus == GameStatus.STARTUP) return;
         playerList.forEach(p -> p.onGameStatusChange(gamestatus));
+    }
+
+    public WerewolfPlugin getPlugin(){
+        return this.plugin;
+    }
+
+    // todo formatting
+    public void notifyPlayer(Player player, String message) {
+        player.sendMessage(message);
+    }
+
+    public void notifyPlayer(WerewolfPlayer player, String message){
+        notifyPlayer(player.getPlayer(), message);
     }
 }

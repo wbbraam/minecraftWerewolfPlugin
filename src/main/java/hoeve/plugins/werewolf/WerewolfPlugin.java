@@ -1,8 +1,11 @@
 package hoeve.plugins.werewolf;
 
+import hoeve.plugins.werewolf.game.CommandHandler;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
+import hoeve.plugins.werewolf.game.helpers.BossBarTimer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
+import hoeve.plugins.werewolf.game.scoreboards.ScoreboardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -10,8 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class WerewolfPlugin extends JavaPlugin{
 
-    private CommandKit commandKit;
+    private CommandHandler commandKit;
     private WerewolfGame werewolfGame;
+    private ScoreboardManager scoreboardManager;
 
 
     @Override
@@ -19,9 +23,9 @@ public class WerewolfPlugin extends JavaPlugin{
         getLogger().info("*********************************");
         getLogger().info("*** Booting Werewolf plugin *****");
         getLogger().info("*********************************");
-        getLogger().info("* Version: 0.1 ");
+        getLogger().info("* Version: 0.2 ");
         getLogger().info("* Author: Scouting de Hoeve ");
-        getLogger().info("* Date: 06-04-2020 ");
+        getLogger().info("* Start date: 06-04-2020 ");
         getLogger().info("*********************************");
 
         // Setup game core
@@ -30,13 +34,11 @@ public class WerewolfPlugin extends JavaPlugin{
 
         // Setup command
         PluginCommand wereWolfCommand = this.getCommand("werewolf");
-        commandKit = new CommandKit(werewolfGame, this);
+        commandKit = new CommandHandler(werewolfGame, this);
         if(wereWolfCommand != null) {
             wereWolfCommand.setExecutor(commandKit);
+            wereWolfCommand.setTabCompleter(commandKit);
         }
-
-
-
     }
 
     @Override
@@ -52,8 +54,10 @@ public class WerewolfPlugin extends JavaPlugin{
      * @param whenAllPlayersAreSet What needs to be executed if everything is set
      * @return Waiter object for the players
      */
-    public WaitTillAllReady setupWaiter(int playerListSize, int maxWaitTime, Runnable whenAllPlayersAreSet){
-        WaitTillAllReady wtar = new WaitTillAllReady(playerListSize, maxWaitTime, whenAllPlayersAreSet);
+    public WaitTillAllReady setupWaiter(int playerListSize, int maxWaitTime, String bossbarMessage, Runnable whenAllPlayersAreSet){
+        BossBarTimer bossBarTimer = new BossBarTimer(this, bossbarMessage, maxWaitTime, null, werewolfGame.getPlayerList());
+
+        WaitTillAllReady wtar = new WaitTillAllReady(bossBarTimer, playerListSize, maxWaitTime, whenAllPlayersAreSet);
 
         // Before you ask, why *20, the server (should always be) run on 20 ticks per seconds, this task uses ticks for its calculation
         // 20 = 1 second
@@ -63,12 +67,13 @@ public class WerewolfPlugin extends JavaPlugin{
         return wtar;
     }
 
-    public void tellPlayer(CommandSender player, String message){
-        player.sendMessage("[Game] " + message);
+
+    public ScoreboardManager getScoreboardManager(){
+        if(scoreboardManager == null) scoreboardManager = new ScoreboardManager();
+
+        return scoreboardManager;
     }
 
-    public void tellPlayer(WerewolfPlayer player, String message){
-        this.tellPlayer(player.getPlayer(), message);
-    }
+
 
 }

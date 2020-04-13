@@ -28,6 +28,74 @@ public class CommandKit implements CommandExecutor {
         this.plugin = plugin;
     }
 
+    /*
+
+
+    werewolf plugin
+
+    COMMANDS:
+    PLAYER SETTING COMMANDS, Only for leader and most during PLAYERSELECT STATE of game.
+    /werewolf player add <playername>
+    /werewolf player remove <playername>
+    /werewolf player list <playername>
+    /werewolf player reset <playername>
+    /werewolf player tellroles (stuurt iedereen zijn rol opnieuw)
+
+    Add player without checking if he exists!
+    /werewolf player addoffline <playername>
+
+    ONLY FOR LEADER
+    Cycle through gane
+    /werewolf state next
+    /werewolf state list
+    /werewolf state end
+
+    ONLY FOR LEADER
+    Kills a player (literaly) and removes from game.
+    /werewolf game kill
+    /werewolf rolemsg <role> <message to send>
+
+    PLAYER COMMANDS:
+    /werewolf whisper   <pm naar leader>
+    /werewolf werechat  <pm naar alle weerwolven en leader alleen als nacht>
+
+    /werewolf take leadership  (this makes you the leader of the game)
+
+    GAMESTATES/GAME FLOW:
+    PLAYERSELECT
+    Add remove player allowed 
+    STARTUP
+    roles are automatically assigned and given to players through pm. Use this phase to ask cupid to whisper you lovers.
+    Pm lovers in game they are lovers
+
+    Ask seer to whisper you who to check. answer in pm.
+
+    DAY
+    Discussion all over the place who to kill
+
+    DAYVOTE
+    Can be done at day step. but as a reminder
+
+    NIGHT
+    /werewolf werechat is now available for werewolfs to discuss victem
+
+    WEREWOLFVOTE
+    Ask werewolfs to come to a decision via werechat
+    PM witch if she wants to save this person
+    PM witch if she wants to kill someone (ask to whipser back)
+
+    Kill off the dead players, take into account hunter and lovers
+
+    State goes back to DAY
+
+    END
+    Only triggerd by /werewolf state end
+    DRaw up th econclusion
+
+    next state is playerselect.
+
+     */
+
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         if (!(sender instanceof Player)) {
@@ -37,10 +105,7 @@ public class CommandKit implements CommandExecutor {
         // First split the command into an array so we can check the sub commands
         String[] commandArray = command.toString().split(" ");
 
-        if (!(label.equals("werewolf"))) {
-            sender.sendMessage("Unknown command in werewolf engine");
-            getLogger().warning("Unknown commands entered werewolf engine. Ignored.");
-        }
+
 
         if (args.length < 1) {
             sender.sendMessage("No correct command send");
@@ -126,7 +191,7 @@ public class CommandKit implements CommandExecutor {
                 if (victem != null) {
                     victem.setHealth(0);
                 }
-                werewolfGame.removePlayer(args[2]);
+//                werewolfGame.removePlayer(args[2]);
         }
 
         return true;
@@ -138,7 +203,7 @@ public class CommandKit implements CommandExecutor {
             return false;
         }
         String message = sender.getName() + " - " + werewolfGame.getPlayerRole(sender.getName()) + ": " + String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        sendIfExist(werewolfGame.getLeaderPlayer(), message);
+        sendIfExist(werewolfGame.getGameMaster(), message);
         return true;
     }
 
@@ -154,7 +219,7 @@ public class CommandKit implements CommandExecutor {
         }
         if (werewolfGame.getStatus().equals(GameStatus.NIGHT) || werewolfGame.getStatus().equals(GameStatus.WEREWOLFVOTE)) {
             String message = sender.getName() + " says as werewolf: " + String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-            sendIfExist(werewolfGame.getLeaderPlayer(), message);
+            sendIfExist(werewolfGame.getGameMaster(), message);
 
             werewolfGame.getPlayerList().forEach(p -> {
                 if (p.getRole() instanceof WereWolfRole) {
@@ -179,11 +244,11 @@ public class CommandKit implements CommandExecutor {
 
         switch (args[1]) {
             case "leadership":
-                WerewolfPlayer oldLeader = werewolfGame.getLeaderPlayer();
+                WerewolfPlayer oldLeader = werewolfGame.getGameMaster();
                 sendIfExist(oldLeader, "Leadership taken by: " + sender.getName());
 
-                werewolfGame.takeLeadership(sender);
-                sendIfExist(werewolfGame.getLeaderPlayer(), "Leadership taken from: " + oldLeader.getName());
+//                werewolfGame.setGameMaster(sender);
+                sendIfExist(werewolfGame.getGameMaster(), "Leadership taken from: " + oldLeader.getName());
                 break;
         }
 
@@ -229,7 +294,7 @@ public class CommandKit implements CommandExecutor {
                 break;
 
             case "end":
-                werewolfGame.endStatus();
+                werewolfGame.finishGame();
                 sender.sendMessage("Game has ended. To start new game, use state next command.");
                 break;
         }
@@ -273,7 +338,7 @@ public class CommandKit implements CommandExecutor {
                     break;
                 }
 
-                werewolfGame.addPlayer(args[2]);
+//                werewolfGame.addPlayer(args[2]);
                 sender.sendMessage("Player added without check. Your responsibility! Not mine. :)");
                 break;
 
@@ -285,7 +350,7 @@ public class CommandKit implements CommandExecutor {
 
                 Player playeradd = getPlayer(args[2]);
                 if (playeradd != null) {
-                    werewolfGame.addPlayer(args[2]);
+//                    werewolfGame.addPlayer(args[2]);
                     sender.sendMessage("Player added: " + args[2]);
                 } else {
                     sender.sendMessage("Could not find player, offline maybe?");
@@ -297,7 +362,7 @@ public class CommandKit implements CommandExecutor {
                     sender.sendMessage("Missing player name, cant remove");
                     break;
                 }
-                werewolfGame.removePlayer(args[2]);
+//                werewolfGame.removePlayer(args[2]);
                 sender.sendMessage("Player removed: " + args[2]);
                 break;
 
@@ -337,7 +402,7 @@ public class CommandKit implements CommandExecutor {
         if(werewolfGame.isPlayerValid(gamePlayer)) {
             CommandSender player = gamePlayer.getPlayer();
             if (player != null) {
-                plugin.tellPlayer(player, message);
+//                plugin.tellPlayer(player, message);
             } else {
                 getLogger().warning("Requested to send a message to non existing player: " + gamePlayer.getName());
                 getLogger().warning("message: " + message);
