@@ -8,5 +8,5 @@ public enum GameStatus {
     NIGHT, // Night activities
     WEREWOLFVOTE, // Voting is goig on
     WITCHACTIVITY, // rescue and or kill [player
-    ENDED // 1 player left, winner is there
+    ENDED // Only wolves or villagers, winner is there
 }

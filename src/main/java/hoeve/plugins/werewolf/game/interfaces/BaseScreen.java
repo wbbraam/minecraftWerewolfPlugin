@@ -1,6 +1,8 @@
 package hoeve.plugins.werewolf.game.interfaces;
 
 import hoeve.plugins.werewolf.game.WerewolfGame;
+import hoeve.plugins.werewolf.game.WerewolfPlayer;
+import hoeve.plugins.werewolf.game.helpers.ItemHelper;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -87,6 +89,15 @@ public abstract class BaseScreen implements InventoryHolder, Listener {
         skullMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS); // prepare item to hide enchantments, give us the ability to glow items without enchantments (it was ment for heads, it doesnt work any more :( )
 
         itemStack.setItemMeta(skullMeta);
+        ItemHelper.rename(itemStack, player.getName());
+        return itemStack;
+    }
+
+    protected ItemStack createHead(WerewolfPlayer player){
+        if(player.isAlive()) return createHead(player.getPlayer());
+
+        ItemStack itemStack = new ItemStack(Material.ZOMBIE_HEAD);
+        ItemHelper.rename(itemStack, player.getName());
         return itemStack;
     }
 
@@ -99,4 +110,9 @@ public abstract class BaseScreen implements InventoryHolder, Listener {
         return myInv.addItem(items);
     }
 
+    public void closeInventory(){
+        for (HumanEntity viewer : myInv.getViewers()) {
+            viewer.closeInventory();
+        }
+    }
 }

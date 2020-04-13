@@ -13,9 +13,12 @@ import java.util.concurrent.Callable;
  */
 public interface IRole {
 
-    public String getRoleName();
-//    public void onGameStart(WerewolfPlayer player, WaitTillAllReady waiter);
-    public WaitTillAllReady firstNight(WerewolfGame game, WerewolfPlayer player, WaitTillAllReady waiter);
-    public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status);
-    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType);
+    String getRoleName();
+    WaitTillAllReady firstNight(WerewolfGame game, WerewolfPlayer player, WaitTillAllReady waiter);
+    void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status);
+    void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType);
+
+    default boolean isVillager(){
+        return true;
+    }
 }

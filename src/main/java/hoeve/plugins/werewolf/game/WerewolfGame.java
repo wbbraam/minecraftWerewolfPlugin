@@ -2,6 +2,7 @@ package hoeve.plugins.werewolf.game;
 
 import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
+import hoeve.plugins.werewolf.game.interfaces.BurgerVoteScreen;
 import hoeve.plugins.werewolf.game.roles.CommonRole;
 import hoeve.plugins.werewolf.game.roles.CupidoRole;
 import hoeve.plugins.werewolf.game.roles.IRole;
@@ -9,11 +10,13 @@ import hoeve.plugins.werewolf.game.roles.WereWolfRole;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -253,7 +256,8 @@ public class WerewolfGame implements Listener {
     }
 
     public void executeNewStatus() {
-        if(gamestatus == GameStatus.STARTUP) return;
+//        if(gamestatus == GameStatus.STARTUP) return;
+
         playerList.forEach(p -> p.onGameStatusChange(this, gamestatus));
     }
 
@@ -278,6 +282,7 @@ public class WerewolfGame implements Listener {
 
         Location gameMasterLocation = gameMaster.getPlayer().getLocation();
 
+        // search campfire
         int radius = 15;
         for(int x = gameMasterLocation.getBlockX() - radius; x <= gameMasterLocation.getBlockX() + radius; x++) {
             for(int y = gameMasterLocation.getBlockY() - radius; y <= gameMasterLocation.getBlockY() + radius; y++) {
@@ -289,7 +294,6 @@ public class WerewolfGame implements Listener {
                 }
             }
         }
-
 
 
         for(int i = 0; i < size; i++){
@@ -308,15 +312,7 @@ public class WerewolfGame implements Listener {
                 newPos = newPos.add(0, 0.5, 0);
             }
 
-            newPos.setDirection((center.clone().subtract(newPos.clone()).toVector()).normalize()); // look at venter
-
-//            ArmorStand stand = (ArmorStand) center.getWorld().spawnEntity(newPos, EntityType.ARMOR_STAND);
-//            stand.setGravity(false);
-//            stand.setCustomNameVisible(true);
-//            stand.setCustomName("Player spawn #" + (i+1));
-//            stand.setCollidable(false);
-
-//            this.armorStandArrayList.add(stand);
+            newPos.setDirection((center.clone().subtract(newPos.clone()).toVector()).normalize()); // look at center
             player.getPlayer().teleport(newPos, PlayerTeleportEvent.TeleportCause.PLUGIN);
         }
     }
@@ -324,6 +320,35 @@ public class WerewolfGame implements Listener {
     public void notifyRole(Class<? extends IRole> roleClass, String message) {
         for (WerewolfPlayer p : this.getPlayersByRole(roleClass)){
             notifyPlayer(p, message);
+        }
+    }
+
+    private BurgerVoteScreen burgerVoteScreen;
+    public void startDayVote(){
+        if(burgerVoteScreen != null){
+            HandlerList.unregisterAll(burgerVoteScreen);
+        }
+
+        burgerVoteScreen = new BurgerVoteScreen(this);
+        Bukkit.getPluginManager().registerEvents(burgerVoteScreen, plugin);
+
+        for (WerewolfPlayer werewolfPlayer : playerList) {
+            burgerVoteScreen.openInventory(werewolfPlayer.getPlayer());
+        }
+
+        plugin.setupWaiter(playerList.size(), 60, "Waiting for everyone to cast there vote [%time%]", () -> {
+            burgerVoteScreen.closeInventory();
+
+            HandlerList.unregisterAll(burgerVoteScreen);
+            burgerVoteScreen = null;
+        });
+    }
+
+    public void showDayVote(Player player) {
+        if(burgerVoteScreen != null){
+            burgerVoteScreen.openInventory(player);
+        }else{
+            notifyPlayer(player, "There is no vote active !");
         }
     }
 }

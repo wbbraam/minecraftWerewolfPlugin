@@ -30,7 +30,6 @@ public class CupidoScreen extends BaseScreen {
 
     private boolean isFinishedSelecting = false;
 
-    private WaitTillAllReady waitTillAllReady;
 
     public CupidoScreen(WerewolfGame game) {
         super(game, "Who are the loved one", (int) Math.ceil(game.getPlayerList().size() / 9D) + 2);
@@ -140,10 +139,9 @@ public class CupidoScreen extends BaseScreen {
 
     public void selectRandom(Player p){
         if(!isFinishedSelecting){
-            if(p.getOpenInventory().getTopInventory().getHolder() == this){
-                isFinishedSelecting = true; // onInventoryClose will reopen the screen if we dont set it on finish
-                p.closeInventory();
-            }
+
+            isFinishedSelecting = true; // onInventoryClose will reopen the screen if we dont set it on finish
+            this.closeInventory();
 
             List<WerewolfPlayer> playerList = game.getPlayerList().stream().filter(pl -> p != pl.getPlayer()    /*!(pl.getRole() instanceof CupidoRole)*/).collect(Collectors.toList());
             Collections.shuffle(playerList);
@@ -156,7 +154,8 @@ public class CupidoScreen extends BaseScreen {
         p1.setLover(p2);
         p2.setLover(p1);
 
-        game.notifyGameMaster("Cupido made " + p1.getName() + " with " + p2.getName());
+        game.notifyGameMaster("Cupido made " + p1.getName() + " and " + p2.getName() + " a couple");
+
         isFinishedSelecting = true;
     }
 }

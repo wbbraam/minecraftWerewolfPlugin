@@ -1,6 +1,5 @@
 package hoeve.plugins.werewolf.game.scoreboards;
 
-import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -8,7 +7,7 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
-import java.util.Optional;
+import java.util.Arrays;
 
 /**
  * Created by DeStilleGast 12-4-2020
@@ -62,8 +61,18 @@ public class WerewolfScoreboard {
         sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
         // end
 
+        int spaceCounter = 1;
         for (int i = 0; i < lines.length; i++) {
-            sidebar.getScore(lines[i]).setScore(lines.length - i);
+            String line = lines[i];
+            if(line.trim().isEmpty()) {
+                char[] array = new char[spaceCounter];
+                Arrays.fill(array, ' ');
+                line = new String(array);
+
+                spaceCounter++;
+            }
+
+            sidebar.getScore(line).setScore(lines.length - i);
         }
     }
 }

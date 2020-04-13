@@ -4,7 +4,6 @@ import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.actions.NearbySelector;
 import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
 import hoeve.plugins.werewolf.game.interfaces.OracleScreen;
-import hoeve.plugins.werewolf.game.interfaces.WerewolfScreen;
 import hoeve.plugins.werewolf.game.roles.WereWolfRole;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -23,7 +22,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     private final WerewolfGame werewolfGame;
     private final WerewolfPlugin plugin;
 
-    private WerewolfScreen wwScreen;
+//    private WerewolfScreen wwScreen;
     private CupidoScreen cupidoScreen;
     private OracleScreen oracleScreen;
     private NearbySelector nearbySelector;
@@ -34,7 +33,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         this.plugin = plugin;
     }
 
-    private void notifiy(CommandSender sender, String message){
+    private void notify(CommandSender sender, String message){
         sender.sendMessage(message);
     }
 
@@ -53,7 +52,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 case "new":
 
                     if(hasLeader){
-                        notifiy(sender, "There is already a game running");
+                        notify(sender, "There is already a game running");
                     }else{
                         werewolfGame.setGameMaster(player);
                         plugin.getScoreboardManager().updateScoreboards(werewolfGame);
@@ -63,36 +62,44 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 case "join":
                     if(hasLeader){
                         if(!werewolfGame.addPlayer(player)){
-                            notifiy(player, "You are already in the game, please wait...");
+                            notify(player, "You are already in the game, please wait...");
                         }else{
                             plugin.getScoreboardManager().updateScoreboards(werewolfGame);
                         }
                     }else{
-                        notifiy(player, "There is no game active");
+                        notify(player, "There is no game active");
                     }
                     break;
                 case "leave":
                     if(werewolfGame.removePlayer(player)){
-                        notifiy(player, "You left the game");
+                        notify(player, "You left the game");
                         plugin.getScoreboardManager().updateScoreboards(werewolfGame);
 
                     }else{
-                        notifiy(player, "You are not even in the game");
+                        notify(player, "You are not even in the game");
                     }
-
-                case "start":
-                    werewolfGame.startGame();
-
-//
-                    if(nearbySelector == null){
-                        nearbySelector = new NearbySelector(werewolfGame, WereWolfRole.class);
-                        nearbySelector.start();
+                    break;
+                case "vote":
+                    if(sender == werewolfGame.getGameMaster().getPlayer()) {
+                        werewolfGame.startDayVote();
                     }else{
-                        nearbySelector.stop();
-                        werewolfGame.notifyGameMaster(nearbySelector.getTopSelectedPlayer().getName() + " was selected");
+                        werewolfGame.showDayVote(player);
                     }
 
-                    werewolfGame.centerPlayers();
+                    break;
+                case "start":
+                    if(hasLeader) {
+                        werewolfGame.startGame();
+
+                        if (nearbySelector == null) {
+                            nearbySelector = new NearbySelector(werewolfGame, WereWolfRole.class);
+                            nearbySelector.start();
+                        } else {
+                            nearbySelector.stop();
+                            werewolfGame.notifyGameMaster(nearbySelector.getTopSelectedPlayer().getName() + " was selected");
+                        }
+
+                        werewolfGame.centerPlayers();
 
 
 //                    if(oracleScreen == null) {
@@ -108,6 +115,9 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 //                    wwScreen.prepareInventory(werewolfGame);
 
 //                    werewolfGame.getPlayerList().forEach(w -> wwScreen.openInventory((Player) w.getPlayer()));
+                    }else{
+                        notify(player, "There is no game active");
+                    }
                     break;
                 case "center":
                     werewolfGame.centerPlayers();

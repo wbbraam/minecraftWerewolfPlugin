@@ -43,4 +43,9 @@ public class WereWolfRole implements IRole {
             game.notifyRole(WereWolfRole.class, "One of your family has been killed");
         }
     }
+
+    @Override
+    public boolean isVillager() {
+        return false;
+    }
 }

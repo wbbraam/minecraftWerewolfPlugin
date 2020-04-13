@@ -39,8 +39,9 @@ public class ItemHelper {
             ItemMeta im = stack.getItemMeta();
             List<String> currentLore = im.getLore();
             if(currentLore == null) currentLore = new ArrayList<>();
+            currentLore.addAll(Arrays.asList(lore));
 
-            im.setLore(Lists.merge(currentLore, Arrays.asList(lore)));
+            im.setLore(currentLore);
             stack.setItemMeta(im);
         }
 
