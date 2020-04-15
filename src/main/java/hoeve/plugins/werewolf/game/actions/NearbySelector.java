@@ -121,7 +121,6 @@ public class NearbySelector implements Runnable, Listener {
 
     @Override
     public void run() {
-
         selected.clear();
 
         for (Player selector : selectors) {
@@ -163,7 +162,7 @@ public class NearbySelector implements Runnable, Listener {
 //            if(game.getGameMaster().getPlayer().equals(p)) return;
 
             if (!selectors.contains(p)) { // is it one of the targets that wants to run away, deny it
-                if (event.getFrom() != event.getTo()) {
+                if (event.getTo() != null && (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getZ() != event.getTo().getZ())){
                     p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 100f, 1f);
 
                     event.setCancelled(true);
