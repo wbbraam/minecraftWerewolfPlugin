@@ -9,6 +9,9 @@ import hoeve.plugins.werewolf.game.interfaces.AskScreen;
 import hoeve.plugins.werewolf.game.interfaces.BurgerVoteScreen;
 import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
 import hoeve.plugins.werewolf.game.roles.*;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -41,8 +44,9 @@ public class WerewolfGame implements Listener {
     private List<Player> leftPlayers = new ArrayList<>();
     private BurgerVoteScreen burgerVoteScreen;
 
-
     private GameStatus gamestatus;
+
+    private Location gameCenter = null;
 
     public WerewolfGame() {
         gamestatus = GameStatus.PLAYERSELECT;
@@ -70,6 +74,27 @@ public class WerewolfGame implements Listener {
 //            //System.out.println("Cards left before dealing:"+ cardDeck.getDeckSize());
 //            player.setRole(cardDeck.drawCard());
 //        }
+
+        Location gameMasterLocation = gameMaster.getPlayer().getLocation();
+
+        // search campfire
+        int radius = 15;
+        for (int x = gameMasterLocation.getBlockX() - radius; x <= gameMasterLocation.getBlockX() + radius; x++) {
+            for (int y = gameMasterLocation.getBlockY() - radius; y <= gameMasterLocation.getBlockY() + radius; y++) {
+                for (int z = gameMasterLocation.getBlockZ() - radius; z <= gameMasterLocation.getBlockZ() + radius; z++) {
+//                    blocks.add(location.getWorld().getBlockAt(x, y, z));
+                    if (gameMasterLocation.getWorld().getBlockAt(x, y, z).getType() == Material.CAMPFIRE) {
+                        gameCenter = new Location(gameMasterLocation.getWorld(), x, y, z).add(0.5, 0, 0.5);
+                    }
+                }
+            }
+        }
+
+        if(gameCenter == null){
+            notifyGameMaster("Could not find campfire !!");
+            return;
+        }
+
 
         for (WerewolfPlayer werewolfPlayer : playerList) {
             werewolfPlayer.setAlive(true);
@@ -116,7 +141,15 @@ public class WerewolfGame implements Listener {
 
     //TODO: message formatting
     public void notifyGameMaster(String message) {
-        gameMaster.getPlayer().sendMessage(message);
+        BaseComponent[] messageObject = new ComponentBuilder("[").color(ChatColor.GOLD)
+                .append("WereWolfGame").color(ChatColor.YELLOW)
+                .append(" | ").color(ChatColor.GOLD)
+                .append("GameMaster").color(ChatColor.YELLOW)
+                .append("]").color(ChatColor.GOLD)
+                .append(" ").reset()
+                .appendLegacy(message).create();
+
+        gameMaster.getPlayer().spigot().sendMessage(messageObject);
     }
 
     /**
@@ -133,8 +166,8 @@ public class WerewolfGame implements Listener {
 
         playerList.add(new WerewolfPlayer(player));
         plugin.getScoreboardManager().addPlayer(player);
-        return true;
 
+        return true;
     }
 
     /**
@@ -147,6 +180,14 @@ public class WerewolfGame implements Listener {
         WerewolfPlayer wwPlayer = playerList.stream().filter(w -> w.getPlayer() == player).findFirst().orElse(null);
 
         plugin.getScoreboardManager().removePlayer(player);
+
+        // check if player is valid and was alive, notify GameMaster that someone has left the server
+        if(wwPlayer != null){
+            if(wwPlayer.isAlive()) {
+                wwPlayer.onPlayerLeave(this);
+            }
+        }
+
         return playerList.remove(wwPlayer);
     }
 
@@ -214,7 +255,13 @@ public class WerewolfGame implements Listener {
 
     // todo formatting
     public void notifyPlayer(Player player, String message) {
-        player.sendMessage("[Game] " + message);
+        BaseComponent[] messageObject = new ComponentBuilder("[").color(ChatColor.GOLD)
+                .append("WereWolfGame").color(ChatColor.YELLOW)
+                .append("]").color(ChatColor.GOLD)
+                .append(" ").reset()
+                .appendLegacy(message).create();
+
+        player.spigot().sendMessage(messageObject);
     }
 
     public void notifyPlayer(WerewolfPlayer player, String message) {
@@ -225,22 +272,6 @@ public class WerewolfGame implements Listener {
         int size = this.playerList.size();
 
         double theta = ((Math.PI * 2) / size);
-        Location center = gameMaster.getPlayer().getLocation();
-
-        Location gameMasterLocation = gameMaster.getPlayer().getLocation();
-
-        // search campfire
-        int radius = 15;
-        for (int x = gameMasterLocation.getBlockX() - radius; x <= gameMasterLocation.getBlockX() + radius; x++) {
-            for (int y = gameMasterLocation.getBlockY() - radius; y <= gameMasterLocation.getBlockY() + radius; y++) {
-                for (int z = gameMasterLocation.getBlockZ() - radius; z <= gameMasterLocation.getBlockZ() + radius; z++) {
-//                    blocks.add(location.getWorld().getBlockAt(x, y, z));
-                    if (gameMasterLocation.getWorld().getBlockAt(x, y, z).getType() == Material.CAMPFIRE) {
-                        center = new Location(gameMasterLocation.getWorld(), x, y, z).add(0.5, 0, 0.5);
-                    }
-                }
-            }
-        }
 
 
         for (int i = 0; i < size; i++) {
@@ -253,13 +284,13 @@ public class WerewolfGame implements Listener {
             double X = Radius * Math.cos(angle);
             double Z = Radius * Math.sin(angle);
 
-            Location newPos = center.clone().add(X, 0, Z);
+            Location newPos = gameCenter.clone().add(X, 0, Z);
 
-            while (gameMasterLocation.getWorld().getBlockAt(newPos).getType() != Material.AIR) {
+            while (gameCenter.getWorld().getBlockAt(newPos).getType() != Material.AIR) {
                 newPos = newPos.add(0, 0.5, 0);
             }
 
-            newPos.setDirection((center.clone().subtract(newPos.clone()).toVector()).normalize()); // look at center
+            newPos.setDirection((gameCenter.clone().subtract(newPos.clone()).toVector()).normalize()); // look at center
             player.getPlayer().teleport(newPos, PlayerTeleportEvent.TeleportCause.PLUGIN);
         }
     }
@@ -407,6 +438,8 @@ public class WerewolfGame implements Listener {
                     // no witch alive
                     theNightHasPassed();
                 }
+            }else {
+                theNightHasPassed();
             }
         }, getPlayerList());
     }
@@ -461,12 +494,34 @@ public class WerewolfGame implements Listener {
         }
 
         new BossBarTimer(plugin, "Everyone is waking up...", 10, () -> {
-            deathTeller.tellStory(this);
+            deathTeller.tellStory(this, this::checkIfGameHasEnded);
         }, getPlayerList());
     }
 
     public DeathTeller getDeathTeller(){
         return this.deathTeller;
+    }
+
+
+    private void checkIfGameHasEnded(){
+        List<WerewolfPlayer> livingPlayers = playerList.stream().filter(WerewolfPlayer::isAlive).collect(Collectors.toList());
+        WerewolfPlayer lastChecked = livingPlayers.get(0);
+        boolean clean = true;
+
+        for (WerewolfPlayer livingPlayer : livingPlayers) {
+            if(lastChecked.getRole().getClass() != livingPlayer.getRole().getClass()){
+                clean = false;
+            }
+        }
+
+        if(!clean){
+            IRole winningRole = lastChecked.getRole();
+            updateStatus(GameStatus.ENDED);
+
+            for (WerewolfPlayer gamePlayer : getPlayerList()) {
+                notifyPlayer(gamePlayer, winningRole.getRoleName() + ChatColor.RESET + "[" + getPlayersByRole(winningRole.getClass()).stream().map(w -> w.getPlayer().getDisplayName()).collect(Collectors.joining(", ")) + "] has won the game !");
+            }
+        }
     }
 }
 

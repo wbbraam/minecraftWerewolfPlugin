@@ -1,6 +1,9 @@
-package hoeve.plugins.werewolf.game;
+package hoeve.plugins.werewolf;
 
 import hoeve.plugins.werewolf.WerewolfPlugin;
+import hoeve.plugins.werewolf.game.EnumDeadType;
+import hoeve.plugins.werewolf.game.WerewolfGame;
+import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.actions.NearbySelector;
 import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
 import org.bukkit.command.Command;

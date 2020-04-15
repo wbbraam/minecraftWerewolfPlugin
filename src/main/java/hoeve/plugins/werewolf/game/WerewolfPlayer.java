@@ -11,6 +11,12 @@ public class WerewolfPlayer {
     private Player playerObject;
 
     private WerewolfPlayer lover;
+    private GameMode oldGamemode;
+
+    public WerewolfPlayer(Player player) {
+        this.playerObject = player;
+        this.oldGamemode = player.getGameMode();
+    }
 
 
     public String getName() {
@@ -32,10 +38,6 @@ public class WerewolfPlayer {
 
     public void setAlive(Boolean alive) {
         this.alive = alive;
-    }
-
-    public WerewolfPlayer(Player player) {
-        this.playerObject = player;
     }
 
     public Player getPlayer() {
@@ -70,4 +72,11 @@ public class WerewolfPlayer {
         this.lover = player;
     }
 
+    public void onPlayerLeave(WerewolfGame game){
+        playerObject.setGameMode(this.oldGamemode);
+
+        if(game.getStatus() != GameStatus.ENDED){
+            game.notifyGameMaster(playerObject.getDisplayName() + " has left the game");
+        }
+    }
 }

@@ -43,8 +43,4 @@ public abstract class IRole {
                 return "died for a unknown reason";
         }
     }
-
-    public boolean isVillager() {
-        return true;
-    }
 }

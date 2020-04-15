@@ -1,13 +1,10 @@
 package hoeve.plugins.werewolf;
 
-import hoeve.plugins.werewolf.game.CommandHandler;
 import hoeve.plugins.werewolf.game.WerewolfGame;
-import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.BossBarTimer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import hoeve.plugins.werewolf.game.scoreboards.ScoreboardManager;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
