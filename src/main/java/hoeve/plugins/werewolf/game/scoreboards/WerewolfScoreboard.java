@@ -1,5 +1,6 @@
 package hoeve.plugins.werewolf.game.scoreboards;
 
+import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -30,14 +31,11 @@ public class WerewolfScoreboard {
         if(game.getGameMaster().getPlayer().equals(player)){
             onGameMasterBoard(game);
         }else {
-            switch (game.getStatus()){
-                case PLAYERSELECT:
-                    createSidebar("Game status:", "Starting...", "", "Players: " + game.getPlayerList().size());
-                    break;
-//                case STARTUP:
-                default:
-                    createSidebar("Game status:", "Preparing...", "", "Your role:", game.getPlayer(player).getRole().getRoleName(), "", "Players: " + game.getPlayerList().size());
-                    break;
+            if (game.getStatus() == GameStatus.PLAYERSELECT) {
+                createSidebar("Game status:", "Starting...", "", "Players: " + game.getPlayerList().size());
+                //                case STARTUP:
+            } else {
+                createSidebar("Game status:", game.getStatus().name(), "", "Your role:", game.getPlayer(player).getRole().getRoleName(), "", "Players: " + game.getPlayerList().size());
             }
         }
     }

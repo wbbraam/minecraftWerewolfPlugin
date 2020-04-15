@@ -20,12 +20,10 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.testng.collections.Lists;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static hoeve.plugins.werewolf.game.EnumDeadType.WITCH;
 
@@ -38,6 +36,11 @@ public class WerewolfGame implements Listener {
     //    private CommandSender leaderName = Bukkit.getConsoleSender();
     private WerewolfPlayer gameMaster = null;
     private ParticleManager particleManager;
+
+    private DeathTeller deathTeller = new DeathTeller();
+    private List<Player> leftPlayers = new ArrayList<>();
+    private BurgerVoteScreen burgerVoteScreen;
+
 
     private GameStatus gamestatus;
 
@@ -76,11 +79,10 @@ public class WerewolfGame implements Listener {
             werewolfPlayer.getPlayer().setGameMode(GameMode.ADVENTURE);
         }
 
-        playerList.get(0).setRole(new WerewolfRole());
-        playerList.get(1).setRole(new WerewolfRole());
-        playerList.get(2).setRole(new WitchRole());
-        playerList.get(3).setRole(new CupidoRole());
-        for (int i = 4; i < playerList.size(); i++) {
+        playerList.get(2).setRole(new WerewolfRole());
+        playerList.get(1).setRole(new WitchRole());
+        playerList.get(0).setRole(new CupidoRole());
+        for (int i = 3; i < playerList.size(); i++) {
             playerList.get(i).setRole(new CommonRole());
         }
 
@@ -106,10 +108,6 @@ public class WerewolfGame implements Listener {
     public void setGameMaster(Player newGameMaster) {
         gameMaster = new WerewolfPlayer(newGameMaster);
         plugin.getScoreboardManager().addPlayer(newGameMaster);
-    }
-
-    public String getLeaderName() {
-        return gameMaster.getName();
     }
 
     public WerewolfPlayer getGameMaster() {
@@ -160,10 +158,6 @@ public class WerewolfGame implements Listener {
         return playerList.stream().filter(p -> p.getPlayer().getName().equals(name)).findFirst().orElse(null);
     }
 
-    public IRole getPlayerRole(String name) {
-        return playerList.stream().filter(p -> p.getName().equalsIgnoreCase(name)).map(WerewolfPlayer::getRole).findFirst().orElse(null);
-    }
-
     public List<WerewolfPlayer> getPlayersByRole(Class<? extends IRole> roleClass) {
         return playerList.stream().filter(p -> p.getRole().getClass() == roleClass).collect(Collectors.toList());
     }
@@ -172,17 +166,9 @@ public class WerewolfGame implements Listener {
      * Clear playerlist
      */
     public void clearPlayerList() {
-        playerList = new ArrayList<>();
+        playerList.clear();
     }
 
-    /**
-     * Get list of player with there roles
-     *
-     * @return List with playername with there role next to it
-     */
-    public List<String> listPlayerNames() {
-        return playerList.stream().map(p -> p.getName() + " - " + p.getRole().getRoleName()).collect(Collectors.toList());
-    }
 
     /**
      * Get list of players from the game
@@ -193,48 +179,6 @@ public class WerewolfGame implements Listener {
         List<WerewolfPlayer> tmpList = new ArrayList<>(playerList);
         tmpList.add(this.gameMaster);
         return tmpList;
-    }
-
-    ///////////////////////
-    // GAMESTATE METHODS //
-    ///////////////////////
-    // TODO: Fix order
-    public GameStatus nextStatus() {
-        switch (gamestatus) {
-            case PLAYERSELECT: // adding/joining and removing players from game
-                gamestatus = GameStatus.STARTUP;
-                return GameStatus.STARTUP;
-
-            case STARTUP: // give every player a role
-                gamestatus = GameStatus.DAY;
-                return gamestatus;
-
-            case DAY: // Someone died (except if we just started or was healed) and we need to kill someone
-                gamestatus = GameStatus.BURGERVOTE;
-                return gamestatus;
-
-            case BURGERVOTE: // We killed someone and were happy or not, but it is bed time
-                gamestatus = GameStatus.NIGHT;
-                return gamestatus;
-
-            case NIGHT: // Its night, party for the werewolves, they are going to meat, also the seer can look in its ball and look for some roles
-                gamestatus = GameStatus.WEREWOLFVOTE;
-                return gamestatus;
-
-            case WEREWOLFVOTE: // After the werewolves went to bed after a good midnight snack, the witch wakes up and checks the night to heal or kill
-                gamestatus = GameStatus.WITCHACTIVITY;
-                return gamestatus;
-
-            case WITCHACTIVITY: // Witch has done its job and went to bed, just to wake up again
-                gamestatus = GameStatus.DAY;
-                return gamestatus;
-
-            case ENDED: // Common/villagers won or the wolves won
-                gamestatus = GameStatus.PLAYERSELECT;
-                return gamestatus;
-        }
-
-        return gamestatus;
     }
 
     /**
@@ -251,48 +195,18 @@ public class WerewolfGame implements Listener {
         return gamestatus;
     }
 
-    /**
-     * Check if player is still online
-     *
-     * @param werewolfPlayer
-     * @return If player is still in the server
-     */
-    public boolean isPlayerValid(WerewolfPlayer werewolfPlayer) {
-        if (werewolfPlayer.getPlayer() instanceof ConsoleCommandSender) return true;
-        if (werewolfPlayer.getPlayer() != null) {
-            Player p = werewolfPlayer.getPlayer();
-            return Bukkit.getOnlinePlayers().contains(p);
-        }
-
-        return false;
-    }
-
 
     // Server events
     @EventHandler
     public void onPlayerDisconnect(PlayerQuitEvent event) {
-//        Player p = event.getPlayer();
         WerewolfPlayer leftPlayer = getPlayer(event.getPlayer());
         if (leftPlayer != null) {
-//            playerList.remove(leftPlayer);
             leftPlayers.add(event.getPlayer());
+
+            plugin.getScoreboardManager().updateScoreboards(this);
         }
     }
 
-    private List<Player> leftPlayers = new ArrayList<>();
-
-    public void executeStartup(Runnable whenAllIsReadyJob) {
-//        WaitTillAllReady waitTillAllReady = plugin.setupWaiter(playerList.size(), 30, "Letting everyone checking out there roles", whenAllIsReadyJob);
-
-//        playerList.forEach(p -> p.onGameStart(waitTillAllReady));
-    }
-
-    @Deprecated
-    public void executeNewStatus() {
-//        if(gamestatus == GameStatus.STARTUP) return;
-
-        playerList.forEach(p -> p.onGameStatusChange(this, gamestatus));
-    }
 
     public WerewolfPlugin getPlugin() {
         return this.plugin;
@@ -356,8 +270,6 @@ public class WerewolfGame implements Listener {
         }
     }
 
-    private BurgerVoteScreen burgerVoteScreen;
-
     private void updateStatus(GameStatus newStatus) {
         this.gamestatus = newStatus;
         plugin.getScoreboardManager().updateScoreboards(this);
@@ -381,7 +293,7 @@ public class WerewolfGame implements Listener {
     }
 
     public void startDayVote() {
-        updateStatus(GameStatus.DAY);
+        updateStatus(GameStatus.BURGERVOTE);
         if (burgerVoteScreen != null) {
             HandlerList.unregisterAll(burgerVoteScreen);
         }
@@ -419,12 +331,7 @@ public class WerewolfGame implements Listener {
                     deathTeller.addDeath(p.getPlayer(), EnumDeadType.VOTE);
                 }
 
-                List<Player> leftPlayersAreGone = new ArrayList<>(leftPlayers);
-                for (Player ghost : leftPlayersAreGone) {
-                    deathTeller.addDeath(ghost, EnumDeadType.LEFT);
-                }
-
-                deathTeller.tellStory(this);
+                tellDeathStory();
             }, playerList);
 
             HandlerList.unregisterAll(burgerVoteScreen);
@@ -458,8 +365,7 @@ public class WerewolfGame implements Listener {
         dinnerSelector.start();
     }
 
-    //    private Map<Player, EnumDeadType> deaths = new HashMap<>();
-    private DeathTeller deathTeller = new DeathTeller();
+
 
     private void wolvesHaveEaten(NearbySelector selectorWolfs) {
         Player food = selectorWolfs.getTopSelectedPlayer();
@@ -472,39 +378,7 @@ public class WerewolfGame implements Listener {
             List<WerewolfPlayer> witchList = getPlayersByRole(WitchRole.class);
             if (!witchList.isEmpty()) {
                 updateStatus(GameStatus.WITCHACTIVITY);
-//                List<AskScreen> elixerScreens = new ArrayList<>();
-//
-//                WaitTillAllReady witchReviveCounter = plugin.setupWaiter(witchList.size(), 30, "It's now to the witch to see what she is going to do [%time%]", () -> {
-//                    elixerScreens.forEach(AskScreen::closeInventory);
-//                    askWitchToKill();
-//                });
-//
-//                for (WerewolfPlayer witch : witchList) {
-//                    if (witch.isAlive()) {
-//                        WitchRole roleInfo = (WitchRole) witch.getRole();
-//                        if (roleInfo.hasElixer()) {
-//                            AskScreen askScreen = new AskScreen(this, food.getDisplayName() + " has been killed, revive him ?");
-//                            askScreen.setFinishAction((event) -> {
-//                                if (askScreen.saidYes) {
-//                                    roleInfo.consumeElixer();
-//                                    deaths.remove(food);
-//
-//                                    // Remove all screens from other witches
-//                                    witchList.forEach(witchReviveCounter::markReady);
-//                                }
-//
-//                                witchReviveCounter.markReady(witch);
-//                            });
-//
-//                            elixerScreens.add(askScreen);
-//                            askScreen.openInventory(witch.getPlayer());
-//                        } else {
-//                            witchReviveCounter.markReady(witch);
-//                        }
-//                    } else {
-//                        witchReviveCounter.markReady(witch);
-//                    }
-//                }
+
 
                 // check if a witch is alive
                 if (witchList.stream().anyMatch(WerewolfPlayer::isAlive)) {
@@ -541,37 +415,6 @@ public class WerewolfGame implements Listener {
         List<WerewolfPlayer> witchList = getPlayersByRole(WitchRole.class).stream().filter(WerewolfPlayer::isAlive).collect(Collectors.toList());
         if (!witchList.isEmpty()) {
             updateStatus(GameStatus.WITCHACTIVITY);
-//
-//            List<WerewolfPlayer> witchWantToKill = new ArrayList<>();
-//            List<AskScreen> askScreens = new ArrayList<>();
-//
-//            WaitTillAllReady waitTillAllReady = plugin.setupWaiter(witchList.size(), 15, "Does the witch wants to kill someone [%time%]", () -> {
-//                askScreens.forEach(AskScreen::closeInventory);
-//
-//                if(witchWantToKill.isEmpty()) {
-//                    theNightHasPassed();
-//                }else{
-//                    witchWantToKill(witchWantToKill);
-//                }
-//            });
-//
-//
-//            for (WerewolfPlayer witch : witchList) {
-//                if (witch.isAlive()) {
-//                    WitchRole roleInfo = (WitchRole) witch.getRole();
-//                    if (roleInfo.hasPoison()) {
-//                        AskScreen killSomeone = new AskScreen(this, "Would you like to kill someone?");
-//                        killSomeone.setFinishAction((event) -> {
-//                            if (killSomeone.saidYes) {
-//                                roleInfo.consumePoison();
-//                                witchWantToKill.add(witch);
-//                            }
-//
-//                            waitTillAllReady.markReady(witch);
-//                        });
-//                        askScreens.add(killSomeone);
-//                        killSomeone.openInventory(witch.getPlayer());
-//                    }
 
             WerewolfPlayer witch = witchList.get(0);
             WitchRole roleInfo = (WitchRole) witch.getRole();
@@ -606,26 +449,20 @@ public class WerewolfGame implements Listener {
     }
 
 
-//    private void witchWantToKill(List<WerewolfPlayer> killers) {
-//        centerPlayers();
-//
-//        NearbySelector targetSelector = new NearbySelector(this, killers.stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList()));
-//        plugin.setupWaiter(1, 30, "The witch wants to kill someone [%time%]", () -> {
-//            targetSelector.stop();
-//
-//            targetSelector.getSelectedPlayers().forEach(deadPlayer -> deaths.put(deadPlayer, EnumDeadType.WITCH));
-////            wolvesHaveEaten(targetSelector);
-//            centerPlayers();
-//
-//            theNightHasPassed();
-//        });
-//        targetSelector.start();
-//    }
-
-
     private void theNightHasPassed() {
         updateStatus(GameStatus.DAY);
-        deathTeller.tellStory(this);
+        tellDeathStory();
+    }
+
+    private void tellDeathStory(){
+        List<Player> leftPlayersAreGone = new ArrayList<>(leftPlayers);
+        for (Player ghost : leftPlayersAreGone) {
+            deathTeller.addDeath(ghost, EnumDeadType.LEFT);
+        }
+
+        new BossBarTimer(plugin, "Everyone is waking up...", 10, () -> {
+            deathTeller.tellStory(this);
+        }, getPlayerList());
     }
 
     public DeathTeller getDeathTeller(){

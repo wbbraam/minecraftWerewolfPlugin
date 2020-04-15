@@ -1,14 +1,24 @@
 package hoeve.plugins.werewolf.game;
 
 public enum GameStatus {
-    PLAYERSELECT,  // Add and remove players allowed
-    STARTUP, // Gives players their card
-    CUPIDO,
-    DAY, // Day activities
-    BURGERVOTE, // Voting is going on
-    NIGHT, // Night activities
-    WEREWOLFVOTE, // Voting is goig on
-    WITCHACTIVITY, // rescue and or kill [player,
-    ENDED, // Only wolves or villagers, winner is there
-    MISSING
+    PLAYERSELECT("Waiting for others"),  // Add and remove players allowed
+    STARTUP("Giving out roles"), // Gives players their card
+    CUPIDO("Cupido activity"),
+    DAY("Waking up"), // Day activities
+    BURGERVOTE("Vote"), // Voting is going on
+    NIGHT("Going to bed"), // Night activities
+    WEREWOLFVOTE("Werewolves are awake"), // Voting is goig on
+    WITCHACTIVITY("Witches are plotting"), // rescue and or kill [player,
+    ENDED("Ended"); // Only wolves or villagers, winner is there
+
+    private String friendlyName;
+
+    GameStatus(String friendlyName) {
+        this.friendlyName = friendlyName;
+    }
+
+    @Override
+    public String toString() {
+        return friendlyName;
+    }
 }

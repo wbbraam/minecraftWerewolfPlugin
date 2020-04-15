@@ -1,15 +1,11 @@
 package hoeve.plugins.werewolf.game;
 
-import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import hoeve.plugins.werewolf.game.roles.IRole;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class WerewolfPlayer {
 
-//    String name = "";
     private IRole role = null;
     private Boolean alive = true;
     private Player playerObject;
@@ -18,12 +14,9 @@ public class WerewolfPlayer {
 
 
     public String getName() {
-        return playerObject.getName();
+        return playerObject.getDisplayName();
     }
 
-//    public void setName(String name) {
-//        this.name = name;
-//    }
 
     public IRole getRole() {
         return role;
@@ -45,34 +38,31 @@ public class WerewolfPlayer {
         this.playerObject = player;
     }
 
-    public Player getPlayer(){
+    public Player getPlayer() {
         return playerObject;
     }
 
-//    public void onGameStart(WaitTillAllReady waiter){
-//        this.getRole().onGameStart(this, waiter);
-//    }
 
-    public void onGameStatusChange(WerewolfGame game, GameStatus status){
+    public void onGameStatusChange(WerewolfGame game, GameStatus status) {
         this.getRole().onGameStateChange(game, this, status);
     }
 
-    public String onDead(WerewolfGame game, EnumDeadType deadType){
-        if(!this.isAlive()) return "already dead";
+    public void kill() {
+        if (!this.isAlive()) return;
         this.alive = false;
 
-        this.getPlayer().setGameMode(GameMode.SPECTATOR);
+        if (this.getPlayer().isOnline()) {
+            this.getPlayer().setGameMode(GameMode.SPECTATOR);
 
-        return this.getRole().onDead(game, this, deadType);
-
-//        if(this.lover != null){
-//            this.lover.onDead(game,this.getRole(), EnumDeadType.LOVE);
-//        }
-
-
+            this.getPlayer().getWorld().strikeLightningEffect(this.getPlayer().getLocation());
+        }
     }
 
-    public WerewolfPlayer getLover(){
+    public String getDeathMessage(WerewolfGame game, EnumDeadType deadType) {
+        return this.getRole().onDead(game, this, deadType);
+    }
+
+    public WerewolfPlayer getLover() {
         return this.lover;
     }
 
