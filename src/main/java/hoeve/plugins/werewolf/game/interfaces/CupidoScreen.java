@@ -3,9 +3,9 @@ package hoeve.plugins.werewolf.game.interfaces;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.ItemHelper;
-import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import hoeve.plugins.werewolf.game.roles.CupidoRole;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -61,15 +61,15 @@ public class CupidoScreen extends BaseScreen {
             }
 
 //            for (int i = 1; i ; i++) {
-                myInv.setItem(myInv.getSize() - 9, new ItemStack(Material.AIR));
-                myInv.setItem(myInv.getSize() - 8, new ItemStack(Material.AIR));
+            myInv.setItem(myInv.getSize() - 9, new ItemStack(Material.AIR));
+            myInv.setItem(myInv.getSize() - 8, new ItemStack(Material.AIR));
 //            }
 //
             List<String> selectedPlayerNames = new ArrayList<>();
 
-            if(glowCount == 2){
+            if (glowCount == 2) {
                 acceptItem.setType(Material.LIME_WOOL);
-            }else{
+            } else {
                 acceptItem.setType(Material.RED_WOOL);
             }
 
@@ -80,22 +80,22 @@ public class CupidoScreen extends BaseScreen {
                         skull = skull.clone();
                         skull.removeEnchantment(magicEffect);
                         myInv.setItem(myInv.getSize() - 9 + selectedPlayerNames.size(), skull);
-                        selectedPlayerNames.add(((SkullMeta)skull.getItemMeta()).getOwningPlayer().getName());
+                        selectedPlayerNames.add(skull.getItemMeta().getDisplayName());
                     }
                 }
             }
 
 
-            ItemHelper.setLore(acceptItem, "You cannot change your mind when you have coupled these 2 people:", "", String.join(" and ",selectedPlayerNames));
+            ItemHelper.setLore(acceptItem, "You cannot change your mind when you have coupled these 2 people:", "", String.join(" and ", selectedPlayerNames));
             myInv.setItem(myInv.getSize() - 1, acceptItem);
-        }else if (itemStack.equals(acceptItem)){
-            if(acceptItem.getType() == Material.LIME_WOOL){
+        } else if (itemStack.equals(acceptItem)) {
+            if (acceptItem.getType() == Material.LIME_WOOL) {
 
                 ItemStack item1 = myInv.getItem(myInv.getSize() - 9); // first head
                 ItemStack item2 = myInv.getItem(myInv.getSize() - 8); // second head
 
-                WerewolfPlayer wereWolf1 = game.getPlayerByName(((SkullMeta)item1.getItemMeta()).getOwningPlayer().getName());
-                WerewolfPlayer wereWolf2 = game.getPlayerByName(((SkullMeta)item2.getItemMeta()).getOwningPlayer().getName());
+                WerewolfPlayer wereWolf1 = game.getPlayerByName(ChatColor.stripColor(item1.getItemMeta().getDisplayName()));
+                WerewolfPlayer wereWolf2 = game.getPlayerByName(ChatColor.stripColor(item2.getItemMeta().getDisplayName()));
 
                 selectPlayers(wereWolf1, wereWolf2);
 
@@ -112,8 +112,10 @@ public class CupidoScreen extends BaseScreen {
         myInv.clear();
 
         game.getPlayerList().forEach(p -> {
-            if (!(p.getRole() instanceof CupidoRole)) {
-                addItem(createHead(p.getPlayer()));
+            if (p != game.getGameMaster()) {
+                if (!(p.getRole() instanceof CupidoRole)) {
+                    addItem(createHead(p.getPlayer()));
+                }
             }
         });
 
@@ -130,15 +132,15 @@ public class CupidoScreen extends BaseScreen {
     }
 
     @EventHandler
-    public void onInventoryClose(InventoryCloseEvent e){
-        if(e.getInventory().getHolder() == this){
-            if(!isFinishedSelecting)
+    public void onInventoryClose(InventoryCloseEvent e) {
+        if (e.getInventory().getHolder() == this) {
+            if (!isFinishedSelecting)
                 Bukkit.getScheduler().runTask(game.getPlugin(), () -> openInventory((Player) e.getPlayer()));
         }
     }
 
-    public void selectRandom(Player p){
-        if(!isFinishedSelecting){
+    public void selectRandom(Player p) {
+        if (!isFinishedSelecting) {
 
             isFinishedSelecting = true; // onInventoryClose will reopen the screen if we dont set it on finish
             this.closeInventory();
@@ -150,7 +152,7 @@ public class CupidoScreen extends BaseScreen {
         }
     }
 
-    private void selectPlayers(WerewolfPlayer p1, WerewolfPlayer p2){
+    private void selectPlayers(WerewolfPlayer p1, WerewolfPlayer p2) {
         p1.setLover(p2);
         p2.setLover(p1);
 
