@@ -11,7 +11,7 @@ import org.bukkit.ChatColor;
 /**
  * Created by DeStilleGast 7-4-2020
  */
-public class CupidoRole implements IRole {
+public class CupidoRole extends IRole {
 
     @Override
     public String getRoleName() {
@@ -30,14 +30,6 @@ public class CupidoRole implements IRole {
         return customWaiter;
     }
 
-    @Override
-    public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
-        switch (status) {
-            case STARTUP:
-                game.notifyPlayer(player, "You are " + getRoleName());
-
-        }
-    }
 
     @Override
     public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {

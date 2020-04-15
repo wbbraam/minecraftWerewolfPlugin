@@ -10,29 +10,12 @@ import org.bukkit.ChatColor;
 /**
  * Created by DeStilleGast 7-4-2020
  */
-public class WerewolfRole implements IRole {
+public class WerewolfRole extends IRole {
 
     @Override
     public String getRoleName() {
         return ChatColor.DARK_RED + "Werewolf";
     }
-
-    @Override
-    public WaitTillAllReady firstNight(WerewolfGame game, WerewolfPlayer player, WaitTillAllReady waiter) {
-        return null;
-    }
-
-    @Override
-    public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
-        // check if it is night, setup vote
-
-        switch (status) {
-            case STARTUP:
-                game.notifyPlayer(player, "You are a " + getRoleName());
-
-        }
-    }
-
 
     @Override
     public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
@@ -43,7 +26,7 @@ public class WerewolfRole implements IRole {
             game.notifyRole(WerewolfRole.class, "One of your family has been killed");
         }
 
-        return "to be made";
+        return super.onDead(game, meDied, deadType);
     }
 
     @Override

@@ -10,7 +10,7 @@ import org.bukkit.ChatColor;
 /**
  * Created by DeStilleGast 7-4-2020
  */
-public class SeeerRole implements IRole {
+public class SeeerRole extends IRole {
     @Override
     public String getRoleName() {
         return ChatColor.AQUA + "Oracle";

@@ -10,7 +10,7 @@ import org.bukkit.ChatColor;
 /**
  * Created by DeStilleGast 7-4-2020
  */
-public class HunterRole implements IRole {
+public class HunterRole extends IRole {
     @Override
     public String getRoleName() {
         return ChatColor.GOLD + "Hunter";
