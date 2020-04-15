@@ -34,7 +34,26 @@ public class WitchRole implements IRole {
     }
 
     @Override
-    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
+    public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
         // drop potions ?
+
+        return "to be made";
+    }
+
+    private boolean elixer = true, poison = true;
+    public boolean hasElixer() {
+        return elixer;
+    }
+
+    public boolean hasPoison(){
+        return poison;
+    }
+
+    public void consumeElixer(){
+        elixer = false;
+    }
+
+    public void consumePoison(){
+        poison = false;
     }
 }

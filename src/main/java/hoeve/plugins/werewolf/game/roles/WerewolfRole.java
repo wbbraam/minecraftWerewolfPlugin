@@ -10,7 +10,7 @@ import org.bukkit.ChatColor;
 /**
  * Created by DeStilleGast 7-4-2020
  */
-public class WereWolfRole implements IRole {
+public class WerewolfRole implements IRole {
 
     @Override
     public String getRoleName() {
@@ -35,13 +35,15 @@ public class WereWolfRole implements IRole {
 
 
     @Override
-    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
+    public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
         // Tell other wolves that one of there friends died
         if (deadType == EnumDeadType.LOVE) {
-            game.notifyRole(WereWolfRole.class, "One of your family has died out of love");
+            game.notifyRole(WerewolfRole.class, "One of your family has died out of love");
         } else {
-            game.notifyRole(WereWolfRole.class, "One of your family has been killed");
+            game.notifyRole(WerewolfRole.class, "One of your family has been killed");
         }
+
+        return "to be made";
     }
 
     @Override

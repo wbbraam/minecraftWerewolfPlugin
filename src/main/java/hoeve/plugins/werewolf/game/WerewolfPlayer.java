@@ -3,6 +3,7 @@ package hoeve.plugins.werewolf.game;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
 import hoeve.plugins.werewolf.game.roles.IRole;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -56,18 +57,27 @@ public class WerewolfPlayer {
         this.getRole().onGameStateChange(game, this, status);
     }
 
-    public void onDead(WerewolfGame game, WerewolfPlayer killedBy, EnumDeadType deadType){
-        if(!this.isAlive()) return;
+    public String onDead(WerewolfGame game, EnumDeadType deadType){
+        if(!this.isAlive()) return "already dead";
         this.alive = false;
 
-        this.getRole().onDead(game, this, killedBy, deadType);
+        this.getPlayer().setGameMode(GameMode.SPECTATOR);
 
-        if(this.lover != null){
-            this.lover.onDead(game,this, EnumDeadType.LOVE);
-        }
+        return this.getRole().onDead(game, this, deadType);
+
+//        if(this.lover != null){
+//            this.lover.onDead(game,this.getRole(), EnumDeadType.LOVE);
+//        }
+
+
+    }
+
+    public WerewolfPlayer getLover(){
+        return this.lover;
     }
 
     public void setLover(WerewolfPlayer player) {
         this.lover = player;
     }
+
 }

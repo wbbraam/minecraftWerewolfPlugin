@@ -49,7 +49,8 @@ public class WaitTillAllReady {
     public void allSet() {
         if (!hasRun) {
             bossBarTimer.cleanUp();
-            whenAllIsSet.run();
+            if(whenAllIsSet != null)
+                whenAllIsSet.run();
         }
         hasRun = true;
     }

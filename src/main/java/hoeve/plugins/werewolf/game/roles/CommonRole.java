@@ -39,22 +39,24 @@ public class CommonRole implements IRole {
     }
 
     @Override
-    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
+    public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
         switch (deadType) {
             case LOVE:
                 game.notifyPlayer(meDied, "You died out of a broken " + ChatColor.LIGHT_PURPLE + "heart");
-                break;
+                return " died of a broken " + ChatColor.LIGHT_PURPLE + "heart";
+
             case WITCH:
                 game.notifyPlayer(meDied, "You died because someone has " + ChatColor.DARK_GREEN + "poisoned" + ChatColor.RESET + " you");
-                break;
+                return "has died of some " + ChatColor.DARK_GREEN + "poison";
             case HUNTER:
                 game.notifyPlayer(meDied, "You died because the hunter pointed his gun to you");
-                break;
+                return "has died because he/she tried to attack a " + ChatColor.GOLD + "hunter";
             case WOLVES:
                 game.notifyPlayer(meDied, "Seems like you were chosen to be eaten.");
+                return "has been killed by the " + ChatColor.DARK_RED + "wolves";
             default:
                 game.notifyPlayer(meDied, "You died of some unknown reason");
-                break;
+                return "died for a unknown reason";
         }
     }
 }

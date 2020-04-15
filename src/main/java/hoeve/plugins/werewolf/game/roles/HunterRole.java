@@ -31,9 +31,11 @@ public class HunterRole implements IRole {
     }
 
     @Override
-    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
+    public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
         if(deadType == EnumDeadType.VOTE || deadType == EnumDeadType.WOLVES){
             // let him kill someone (bow and arrow)
         }
+
+        return "to be made";
     }
 }

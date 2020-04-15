@@ -33,8 +33,8 @@ public class SeeerRole implements IRole {
     }
 
     @Override
-    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
+    public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
         // all the knowledge is lost
-
+        return "to be made, but his/her knowledge are lost for ever";
     }
 }

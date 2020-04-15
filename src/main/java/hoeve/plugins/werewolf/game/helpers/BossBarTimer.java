@@ -62,8 +62,10 @@ public class BossBarTimer implements Runnable {
 
 
     public void cleanUp(){
-        bossBar.removeAll();
-        bossBar = null;
+        if(bossBar != null) {
+            bossBar.removeAll();
+            bossBar = null;
+        }
     }
 
     private String formatTime(long totalMilliSecs){

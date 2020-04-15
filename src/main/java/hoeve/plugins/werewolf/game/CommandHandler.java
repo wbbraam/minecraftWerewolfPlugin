@@ -3,8 +3,6 @@ package hoeve.plugins.werewolf.game;
 import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.actions.NearbySelector;
 import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
-import hoeve.plugins.werewolf.game.interfaces.OracleScreen;
-import hoeve.plugins.werewolf.game.roles.WereWolfRole;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -24,7 +22,6 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
 //    private WerewolfScreen wwScreen;
     private CupidoScreen cupidoScreen;
-    private OracleScreen oracleScreen;
     private NearbySelector nearbySelector;
 
 
@@ -80,26 +77,28 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                     }
                     break;
                 case "vote":
-                    if(sender == werewolfGame.getGameMaster().getPlayer()) {
-                        werewolfGame.startDayVote();
-                    }else{
-                        werewolfGame.showDayVote(player);
+                    if(hasLeader) {
+                        if (sender.equals(werewolfGame.getGameMaster().getPlayer())) {
+                            werewolfGame.startDayVote();
+                        } else {
+                            werewolfGame.showDayVote(player);
+                        }
                     }
 
                     break;
                 case "start":
                     if(hasLeader) {
-                        werewolfGame.startGame();
-
-                        if (nearbySelector == null) {
-                            nearbySelector = new NearbySelector(werewolfGame, WereWolfRole.class);
-                            nearbySelector.start();
-                        } else {
-                            nearbySelector.stop();
-                            werewolfGame.notifyGameMaster(nearbySelector.getTopSelectedPlayer().getName() + " was selected");
-                        }
-
                         werewolfGame.centerPlayers();
+                        werewolfGame.startGame();
+//
+//                        if (nearbySelector == null) {
+//                            nearbySelector = new NearbySelector(werewolfGame, WerewolfRole.class);
+//                            nearbySelector.start();
+//                        } else {
+//                            nearbySelector.stop();
+//                            werewolfGame.notifyGameMaster(nearbySelector.getTopSelectedPlayer().getName() + " was selected");
+//                        }
+
 
 
 //                    if(oracleScreen == null) {
@@ -121,6 +120,30 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                     break;
                 case "center":
                     werewolfGame.centerPlayers();
+                    break;
+                case "night":
+                    werewolfGame.startDefaultNightActivities();
+                    break;
+                case "roles":
+                    for (WerewolfPlayer pl : werewolfGame.getPlayerList()) {
+                        notify(sender, pl.getPlayer().getName() + " -  " + pl.getRole().getRoleName());
+                    }
+                    break;
+                case "kill":
+                    if(hasLeader) {
+                        if (sender.equals(werewolfGame.getGameMaster().getPlayer())) {
+                            if(args.length == 1){
+                                notify(sender, "Please specify a name");
+                            }else {
+                                WerewolfPlayer target = werewolfGame.getPlayerByName(args[1]);
+                                if(target != null){
+                                    werewolfGame.getDeathTeller().addDeath(target.getPlayer(), EnumDeadType.GAMEMASTER);
+                                }else{
+                                    notify(sender, "Could not find player");
+                                }
+                            }
+                        }
+                    }
             }
 
 

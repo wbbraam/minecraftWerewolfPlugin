@@ -4,7 +4,11 @@ import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.roles.IRole;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,6 +39,8 @@ public class NearbySelector implements Runnable, Listener {
 
     private final PotionEffect selectEffect = new PotionEffect(PotionEffectType.GLOWING, 10, 1, false, false, false);
 
+    private List<Player> selectables;
+
     public NearbySelector(WerewolfGame game, List<Player> selectors) {
         this.game = game;
         this.selectors = selectors;
@@ -50,9 +56,13 @@ public class NearbySelector implements Runnable, Listener {
         List<Player> playerList = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
 
         for (Player player : playerList) {
-            if (!selectors.contains(player)) { // if player is a selector, we dont want to hide the players for them
-                for (Player hideThisPlayer : playerList) {
-                    player.hidePlayer(game.getPlugin(), hideThisPlayer);
+            if(game.getGameMaster().getPlayer() == player) continue;
+
+            if(player.getGameMode() != GameMode.SPECTATOR) {
+                if (!selectors.contains(player)) { // if player is a selector, we dont want to hide the players for them
+                    for (Player hideThisPlayer : playerList) {
+                        player.hidePlayer(game.getPlugin(), hideThisPlayer);
+                    }
                 }
             }
         }
@@ -60,6 +70,9 @@ public class NearbySelector implements Runnable, Listener {
         game.centerPlayers();
         task = Bukkit.getScheduler().runTaskTimer(game.getPlugin(), this, 5, 5);
         Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
+
+        selectables = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).filter(p -> !selectors.contains(p)).filter(player -> player.getGameMode() != GameMode.SPECTATOR).collect(Collectors.toList());
+        selectables.remove(game.getGameMaster().getPlayer());
     }
 
     public void stop() {
@@ -87,7 +100,7 @@ public class NearbySelector implements Runnable, Listener {
         Map<Player, Integer> countMap = new HashMap<>();
         for (Player p : selected.values()){
             countMap.put(p, countMap.getOrDefault(p, 0) + 1);
-        };
+        }
 
         int currentCount = 0;
         Player mostCounts = null;
@@ -108,7 +121,7 @@ public class NearbySelector implements Runnable, Listener {
 
     @Override
     public void run() {
-        List<Player> selectables = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).filter(p -> !selectors.contains(p)).collect(Collectors.toList());
+
         selected.clear();
 
         for (Player selector : selectors) {
@@ -123,7 +136,10 @@ public class NearbySelector implements Runnable, Listener {
                 }
             }
 
-            selected.put(selector, mostNearby);
+            if(mostNearby != null) {
+                selected.put(selector, mostNearby);
+                selector.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder("You are selecing: ").append(mostNearby.getDisplayName()).color(ChatColor.AQUA).create());
+            }
         }
 
         for (Player selected : selected.values()) {
@@ -141,11 +157,17 @@ public class NearbySelector implements Runnable, Listener {
     @EventHandler
     public void onAttemptToMove(PlayerMoveEvent event){
         Player p = event.getPlayer();
-        if(!selectors.contains(p)) { // is it one of the targets that wants to run away, deny it
-            if(event.getFrom() != event.getTo()){
-                p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 100f, 1f);
+        if(game.getGameMaster().getPlayer() == p) return;
 
-                event.setCancelled(true);
+        if(game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).anyMatch(player -> player == event.getPlayer())) {
+//            if(game.getGameMaster().getPlayer().equals(p)) return;
+
+            if (!selectors.contains(p)) { // is it one of the targets that wants to run away, deny it
+                if (event.getFrom() != event.getTo()) {
+                    p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 100f, 1f);
+
+                    event.setCancelled(true);
+                }
             }
         }
     }

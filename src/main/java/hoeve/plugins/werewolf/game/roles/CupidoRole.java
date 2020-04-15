@@ -40,7 +40,8 @@ public class CupidoRole implements IRole {
     }
 
     @Override
-    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
+    public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
         // maybe funny message about a couple if they are still alive, if dead sad message about how he lost
+        return "To be made";
     }
 }

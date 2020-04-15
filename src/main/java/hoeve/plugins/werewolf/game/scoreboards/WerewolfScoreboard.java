@@ -27,14 +27,15 @@ public class WerewolfScoreboard {
     public void update(WerewolfGame game) {
         if(game == null) return;
 
-        if(game.getGameMaster() == game.getPlayer(player)){
+        if(game.getGameMaster().getPlayer().equals(player)){
             onGameMasterBoard(game);
         }else {
             switch (game.getStatus()){
                 case PLAYERSELECT:
                     createSidebar("Game status:", "Starting...", "", "Players: " + game.getPlayerList().size());
                     break;
-                case STARTUP:
+//                case STARTUP:
+                default:
                     createSidebar("Game status:", "Preparing...", "", "Your role:", game.getPlayer(player).getRole().getRoleName(), "", "Players: " + game.getPlayerList().size());
                     break;
             }

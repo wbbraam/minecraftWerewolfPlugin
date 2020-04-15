@@ -47,7 +47,7 @@ public class WerewolfCardDeck {
 
         for (int i = 0; i < werewolfAmount; i++)
         {
-            playingCards.add(new WereWolfRole());
+            playingCards.add(new WerewolfRole());
         }
 
         //Shuffle the cards ;)

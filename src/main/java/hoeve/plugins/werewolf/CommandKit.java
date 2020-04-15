@@ -3,7 +3,7 @@ package hoeve.plugins.werewolf;
 import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
-import hoeve.plugins.werewolf.game.roles.WereWolfRole;
+import hoeve.plugins.werewolf.game.roles.WerewolfRole;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -112,7 +112,7 @@ public class CommandKit implements CommandExecutor {
             return false;
         }
 
-        switch (args[0].toString()) {
+        switch (args[0]) {
             case "player":
 
                 if (!sender.getName().equals(werewolfGame.getLeaderName())) {
@@ -213,7 +213,7 @@ public class CommandKit implements CommandExecutor {
             sender.sendMessage("Wrong usage of werechat command, missing arguments.");
             return false;
         }
-        if (!(werewolfGame.getPlayerRole(sender.getName()) instanceof WereWolfRole)) {
+        if (!(werewolfGame.getPlayerRole(sender.getName()) instanceof WerewolfRole)) {
             sender.sendMessage("You are no werewolf! Not for you!");
             return false;
         }
@@ -222,7 +222,7 @@ public class CommandKit implements CommandExecutor {
             sendIfExist(werewolfGame.getGameMaster(), message);
 
             werewolfGame.getPlayerList().forEach(p -> {
-                if (p.getRole() instanceof WereWolfRole) {
+                if (p.getRole() instanceof WerewolfRole) {
                     sendIfExist(p, message);
                 }
             });
