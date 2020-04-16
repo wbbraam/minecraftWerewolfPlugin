@@ -4,6 +4,7 @@ import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.roles.IRole;
+import hoeve.plugins.werewolf.game.roles.WerewolfRole;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -53,7 +54,7 @@ public class NearbySelector implements Runnable, Listener {
 
 
     public void start() {
-        List<Player> playerList = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
+        List<Player> playerList = game.getPlayerList().stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
 
         for (Player player : playerList) {
             if(game.getGameMaster().getPlayer() == player) continue;
@@ -71,8 +72,12 @@ public class NearbySelector implements Runnable, Listener {
         task = Bukkit.getScheduler().runTaskTimer(game.getPlugin(), this, 5, 5);
         Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 
-        selectables = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).filter(p -> !selectors.contains(p)).filter(player -> player.getGameMode() != GameMode.SPECTATOR).collect(Collectors.toList());
+        selectables = game.getPlayerList().stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).filter(p -> !selectors.contains(p)).collect(Collectors.toList());
         selectables.remove(game.getGameMaster().getPlayer());
+
+        for (Player selector : selectors) {
+            game.notifyPlayer(selector, "Stand by a player you want to vote for");
+        }
     }
 
     public void stop() {
