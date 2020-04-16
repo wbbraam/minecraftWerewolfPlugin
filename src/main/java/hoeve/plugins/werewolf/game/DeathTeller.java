@@ -44,6 +44,8 @@ public class DeathTeller {
         List<Runnable> actions = new ArrayList<>();
         boolean isLovedDead = false;
 
+        List<WerewolfPlayer> players = game.getPlayerList(true);
+
         for(Tuple<Player, EnumDeadType> playerDeath : deaths){
             WerewolfPlayer deadCharacter = game.getPlayer(playerDeath.getFirst());
 
@@ -54,8 +56,8 @@ public class DeathTeller {
                 // Check if player was healed
                 if(healEvent.isPresent()){
                     // yes, player was healed, nothing much will happen
-                    actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " was found heavly injured from a " + playerDeath.getSecond().getFriendlyName() + " attack", 10, null, game.getPlayerList()));
-                    actions.add(() -> new BossBarTimer(game.getPlugin(), "but was healed by a " + healEvent.get().getSecond().getFriendlyName(), 10, null, game.getPlayerList()));
+                    actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " was found heavly injured from a " + playerDeath.getSecond().getFriendlyName() + " attack", 10, null, players));
+                    actions.add(() -> new BossBarTimer(game.getPlugin(), "but was healed by a " + healEvent.get().getSecond().getFriendlyName(), 10, null, players));
                 }else{
                     // No, player died
                     EnumDeadType deadType = playerDeath.getSecond();
@@ -63,29 +65,29 @@ public class DeathTeller {
                     switch (deadType) {
                         case VOTE:
                             // Died because of vote
-                            actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " was throwed on the fire...", 10, deadCharacter::kill, game.getPlayerList()));
+                            actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " was throwed on the fire...", 10, deadCharacter::kill, players));
                             break;
                         case LEFT:
                             // Died because (s)he left
-                            actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " went missing", 10, deadCharacter::kill, game.getPlayerList()));
-                            actions.add(() -> new BossBarTimer(game.getPlugin(), "The town decided that he/she was gone for good", 10, null, game.getPlayerList()));
+                            actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " went missing", 10, deadCharacter::kill, players));
+                            actions.add(() -> new BossBarTimer(game.getPlugin(), "The town decided that he/she was gone for good", 10, null, players));
 
                             break;
                         case GAMEMASTER:
                             // Died because the GameMaster said so
-                            actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " went missing", 10, deadCharacter::kill, game.getPlayerList()));
-                            actions.add(() -> new BossBarTimer(game.getPlugin(), "But the town quickly found out that the gods punished him/her", 10, null, game.getPlayerList()));
+                            actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " went missing", 10, deadCharacter::kill, players));
+                            actions.add(() -> new BossBarTimer(game.getPlugin(), "But the town quickly found out that the gods punished him/her", 10, null, players));
 
                             break;
                         default:
                             // Died by werewolf, witch, hunter
-                            actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " was found dead..", 10, deadCharacter::kill, game.getPlayerList()));
-                            actions.add(() -> new BossBarTimer(game.getPlugin(), deathName + " " + customDeadMessage.trim(), 10, null, game.getPlayerList()));
+                            actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " was found dead..", 10, deadCharacter::kill, players));
+                            actions.add(() -> new BossBarTimer(game.getPlugin(), deathName + " " + customDeadMessage.trim(), 10, null, players));
                             break;
                     }
 
                     // Tell role of player
-                    actions.add(() -> new BossBarTimer(game.getPlugin(), deathName + " was a " + deadCharacter.getRole().getRoleName(), 10, null, game.getPlayerList()));
+                    actions.add(() -> new BossBarTimer(game.getPlugin(), deathName + " was a " + deadCharacter.getRole().getRoleName(), 10, null, players));
 
                     // Check if there is a lover
                     if(!isLovedDead && deadCharacter.getLover() != null && deadCharacter.getLover().isAlive()){
@@ -94,11 +96,11 @@ public class DeathTeller {
                         WerewolfPlayer lovedOne = deadCharacter.getLover();
 
                         // tell others that a lover died
-                        actions.add(() -> new BossBarTimer(game.getPlugin(), "But quickly after that " + deathName + " was announced dead", 10, lovedOne::kill, game.getPlayerList()));
-                        actions.add(() -> new BossBarTimer(game.getPlugin(), lovedOne.getPlayer().getDisplayName() + " " + lovedOne.getDeathMessage(game, EnumDeadType.LOVE), 10, null, game.getPlayerList()));
+                        actions.add(() -> new BossBarTimer(game.getPlugin(), "But quickly after that " + deathName + " was announced dead", 10, lovedOne::kill, players));
+                        actions.add(() -> new BossBarTimer(game.getPlugin(), lovedOne.getPlayer().getDisplayName() + " " + lovedOne.getDeathMessage(game, EnumDeadType.LOVE), 10, null, players));
 
                         // Also tell them his/her role
-                        actions.add(() -> new BossBarTimer(game.getPlugin(), lovedOne.getPlayer().getDisplayName() + " was a " + lovedOne.getRole().getRoleName(), 10, null, game.getPlayerList()));
+                        actions.add(() -> new BossBarTimer(game.getPlugin(), lovedOne.getPlayer().getDisplayName() + " was a " + lovedOne.getRole().getRoleName(), 10, null, players));
                     }
                 }
             }

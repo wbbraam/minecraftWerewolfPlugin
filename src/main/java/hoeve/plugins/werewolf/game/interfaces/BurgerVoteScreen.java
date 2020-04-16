@@ -21,7 +21,7 @@ public class BurgerVoteScreen extends BaseScreen {
     private Map<Player, String> voteMap;
 
     public BurgerVoteScreen(WerewolfGame game) {
-        super(game, "Who do we throw on the fire ?", (int)Math.ceil(game.getPlayerList().size() / 9D));
+        super(game, "Who do we throw on the fire ?", (int)Math.ceil(game.getPlayerList(false).size() / 9D));
         resetVote();
         prepareInventory();
 
@@ -50,10 +50,8 @@ public class BurgerVoteScreen extends BaseScreen {
     protected void prepareInventory() {
         myInv.clear();
 
-        game.getPlayerList().forEach(p -> {
-            if(!p.equals(game.getGameMaster())) {
-                addItem(createVoteHead(p.getPlayer()));
-            }
+        game.getPlayerList(false).forEach(p -> {
+            addItem(createVoteHead(p.getPlayer()));
         });
     }
 

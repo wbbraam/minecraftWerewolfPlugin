@@ -20,10 +20,8 @@ public class ScoreboardManager {
     }
 
     public void removePlayer(Player player) {
-        if (scoreboardMap.containsKey(player)) {
-            player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            scoreboardMap.remove(player);
-        }
+        player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        scoreboardMap.remove(player);
     }
 
     public void updateScoreboards(WerewolfGame game) {

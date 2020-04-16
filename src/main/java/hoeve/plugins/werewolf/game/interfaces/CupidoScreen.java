@@ -32,7 +32,7 @@ public class CupidoScreen extends BaseScreen {
 
 
     public CupidoScreen(WerewolfGame game) {
-        super(game, "Who are the loved one", (int) Math.ceil(game.getPlayerList().size() / 9D) + 2);
+        super(game, "Who are the loved one", (int) Math.ceil(game.getPlayerList(false).size() / 9D) + 2);
 
         ItemHelper.rename(acceptItem, "Couple these people");
         ItemHelper.setLore(acceptItem, "You cannot change your mind when you have coupled 2 people");
@@ -111,11 +111,9 @@ public class CupidoScreen extends BaseScreen {
 
         myInv.clear();
 
-        game.getPlayerList().forEach(p -> {
-            if (p != game.getGameMaster()) {
-                if (!(p.getRole() instanceof CupidoRole)) {
-                    addItem(createHead(p.getPlayer()));
-                }
+        game.getPlayerList(false).forEach(p -> {
+            if (!(p.getRole() instanceof CupidoRole)) {
+                addItem(createHead(p.getPlayer()));
             }
         });
 
@@ -145,7 +143,7 @@ public class CupidoScreen extends BaseScreen {
             isFinishedSelecting = true; // onInventoryClose will reopen the screen if we dont set it on finish
             this.closeInventory();
 
-            List<WerewolfPlayer> playerList = game.getPlayerList().stream().filter(pl -> p != pl.getPlayer()    /*!(pl.getRole() instanceof CupidoRole)*/).collect(Collectors.toList());
+            List<WerewolfPlayer> playerList = game.getPlayerList(false).stream().filter(pl -> p != pl.getPlayer()    /*!(pl.getRole() instanceof CupidoRole)*/).collect(Collectors.toList());
             Collections.shuffle(playerList);
 
             selectPlayers(playerList.get(0), playerList.get(1));

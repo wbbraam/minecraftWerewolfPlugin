@@ -52,7 +52,7 @@ public class WerewolfPlugin extends JavaPlugin{
      * @return Waiter object for the players
      */
     public WaitTillAllReady setupWaiter(int playerListSize, int maxWaitTime, String bossbarMessage, Runnable whenAllPlayersAreSet){
-        BossBarTimer bossBarTimer = new BossBarTimer(this, bossbarMessage, maxWaitTime, null, werewolfGame.getPlayerList());
+        BossBarTimer bossBarTimer = new BossBarTimer(this, bossbarMessage, maxWaitTime, null, werewolfGame.getPlayerList(true));
 
         WaitTillAllReady wtar = new WaitTillAllReady(bossBarTimer, playerListSize, maxWaitTime, whenAllPlayersAreSet);
 

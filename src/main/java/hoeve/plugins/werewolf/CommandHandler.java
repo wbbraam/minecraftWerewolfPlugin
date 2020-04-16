@@ -106,9 +106,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                         werewolfGame.startDefaultNightActivities();
                         break;
                     case "roles":
-                        for (WerewolfPlayer pl : werewolfGame.getPlayerList()) {
-                            if(pl.equals(werewolfGame.getGameMaster())) continue;
-
+                        for (WerewolfPlayer pl : werewolfGame.getPlayerList(false)) {
                             notify(sender, pl.getPlayer().getName() + " -  " + pl.getRole().getRoleName());
                         }
                         break;
@@ -138,7 +136,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 }
             } else {
                 if ("new".equals(args[0].toLowerCase()) && player.hasPermission("werewolf.gamemaster")) {
-                    werewolfGame.setGameMaster(player);
+                    werewolfGame.prepareNewGame(player);
+
                     plugin.getScoreboardManager().updateScoreboards(werewolfGame);
                     werewolfGame.notifyPlayer(sender, "New game started");
                 }

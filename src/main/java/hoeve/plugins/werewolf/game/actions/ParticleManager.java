@@ -33,14 +33,14 @@ public class ParticleManager implements Runnable {
 
     @Override
     public void run() {
-        for (WerewolfPlayer player : game.getPlayerList()) {
+        for (WerewolfPlayer player : game.getPlayerList(false)) {
 
             // Spawn particle on gamemaster if the player can see the game master
             if (player.getPlayer().canSee(game.getGameMaster().getPlayer()))
                 spawnParticle(player, Particle.END_ROD, game.getGameMaster().getPlayer().getLocation());
 
             if (!player.isAlive()) continue;
-            for (WerewolfPlayer particleOnThisPlayer : game.getPlayerList()) {
+            for (WerewolfPlayer particleOnThisPlayer : game.getPlayerList(false)) {
                 // skip particle on this player because (s)he can see him/her
                 if (!player.getPlayer().canSee(particleOnThisPlayer.getPlayer())) continue;
 
@@ -62,7 +62,7 @@ public class ParticleManager implements Runnable {
             }
         }
 
-        for (WerewolfPlayer player : game.getPlayerList()) {
+        for (WerewolfPlayer player : game.getPlayerList(false)) {
             if (player.isAlive()) {
                 // Werewolf
                 if (player.getRole() instanceof WerewolfRole) {

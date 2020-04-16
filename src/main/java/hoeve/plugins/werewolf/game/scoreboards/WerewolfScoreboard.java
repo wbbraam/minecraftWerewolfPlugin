@@ -38,20 +38,22 @@ public class WerewolfScoreboard {
             onGameMasterBoard(game);
         }else {
             if (game.getStatus() == GameStatus.PLAYERSELECT) {
-                createSidebar("Game status:", "Starting...", "", "Players: " + (game.getPlayerList().size() - 1));
+                createSidebar("Game status:", "Starting...", "", "Players: " + (game.getPlayerList(false).size()));
             } else {
-                createSidebar("Game status:", game.getStatus().name(), "", "Your role:", game.getPlayer(player).getRole().getRoleName(), "", "Players: " + (game.getPlayerList().size() - 1));
+                createSidebar("Game status:", game.getStatus().name(), "", "Your role:", game.getPlayer(player).getRole().getRoleName(), "", "Players: " + (game.getPlayerList(false).size()));
             }
         }
     }
 
     private void onGameMasterBoard(WerewolfGame game){
-        if(game.getStatus() == GameStatus.PLAYERSELECT) {
-            createSidebar("Game status:", "Starting...", "", "Players: " + game.getPlayerList().size());
-        }else{
-            List<String> sidebarItems = new ArrayList<>(Arrays.asList("Game status:", game.getStatus().name(), "", "Players: " + game.getPlayerList().size(), ""));
+        List<WerewolfPlayer> playerList = game.getPlayerList(false);
 
-            game.getPlayerList().stream().filter(wp -> !wp.equals(game.getGameMaster())).map(WerewolfPlayer::getRole).distinct().forEach(r -> {
+        if(game.getStatus() == GameStatus.PLAYERSELECT) {
+            createSidebar("Game status:", "Starting...", "", "Players: " + playerList.size());
+        }else{
+            List<String> sidebarItems = new ArrayList<>(Arrays.asList("Game status:", game.getStatus().name(), "", "Players: " + playerList.size(), ""));
+
+            playerList.stream().map(WerewolfPlayer::getRole).distinct().forEach(r -> {
                 long playersWithRole = game.getPlayersByRole(r.getClass()).stream().filter(WerewolfPlayer::isAlive).count();
                 sidebarItems.add(r.getRoleName() + ChatColor.RESET + ": " + playersWithRole);
             });

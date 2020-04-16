@@ -52,12 +52,10 @@ public class NearbySelector implements Runnable, Listener {
 
 
     public void start() {
-        List<Player> playerList = game.getPlayerList().stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
+        List<Player> playerList = game.getPlayerList(false).stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
 
         if(!isEveryoneVisible) {
             for (Player player : playerList) {
-                if (game.getGameMaster().getPlayer() == player) continue;
-
                 if (player.getGameMode() != GameMode.SPECTATOR) {
                     if (!selectors.contains(player)) { // if player is a selector, we dont want to hide the players for them
                         for (Player hideThisPlayer : playerList) {
@@ -72,7 +70,7 @@ public class NearbySelector implements Runnable, Listener {
         task = Bukkit.getScheduler().runTaskTimer(game.getPlugin(), this, 5, 5);
         Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 
-        selectables = game.getPlayerList().stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).filter(p -> !selectors.contains(p)).collect(Collectors.toList());
+        selectables = game.getPlayerList(false).stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).filter(p -> !selectors.contains(p)).collect(Collectors.toList());
         selectables.remove(game.getGameMaster().getPlayer());
 
         for (Player selector : selectors) {
@@ -86,7 +84,7 @@ public class NearbySelector implements Runnable, Listener {
 
         game.centerPlayers();
 
-        List<Player> playerList = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
+        List<Player> playerList = game.getPlayerList(true).stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
         for (Player player : playerList) {
             player.removePotionEffect(PotionEffectType.GLOWING);
 
@@ -163,7 +161,7 @@ public class NearbySelector implements Runnable, Listener {
         Player p = event.getPlayer();
         if(game.getGameMaster().getPlayer() == p) return;
 
-        if(game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).anyMatch(player -> player == event.getPlayer())) {
+        if(game.getPlayerList(false).stream().map(WerewolfPlayer::getPlayer).anyMatch(player -> player == event.getPlayer())) {
 //            if(game.getGameMaster().getPlayer().equals(p)) return;
 
             if (!selectors.contains(p)) { // is it one of the targets that wants to run away, deny it
