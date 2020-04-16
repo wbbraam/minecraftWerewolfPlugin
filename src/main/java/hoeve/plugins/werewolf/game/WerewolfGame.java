@@ -16,6 +16,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -107,6 +108,7 @@ public class WerewolfGame implements Listener {
         playerList.get(2).setRole(new WerewolfRole());
         playerList.get(1).setRole(new WitchRole());
         playerList.get(0).setRole(new CupidoRole());
+
         for (int i = 3; i < playerList.size(); i++) {
             playerList.get(i).setRole(new CommonRole());
         }
@@ -253,8 +255,8 @@ public class WerewolfGame implements Listener {
         return this.plugin;
     }
 
-    // todo formatting
-    public void notifyPlayer(Player player, String message) {
+
+    public void notifyPlayer(CommandSender player, String message) {
         BaseComponent[] messageObject = new ComponentBuilder("[").color(ChatColor.GOLD)
                 .append("WereWolfGame").color(ChatColor.YELLOW)
                 .append("]").color(ChatColor.GOLD)
@@ -340,30 +342,45 @@ public class WerewolfGame implements Listener {
             burgerVoteScreen.closeInventory();
 
             Collection<String> voteList = burgerVoteScreen.getVoteMap().values();
-            Map<String, Long> collect = voteList.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+            if(!voteList.isEmpty()) {
+                Map<String, Long> collect = voteList.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-            String highest = "";
-            long currentMax = Long.MIN_VALUE;
-            for (String key : collect.keySet()){
-                if(highest.isEmpty()) highest = key;
+                String highest = "";
+                long currentMax = Long.MIN_VALUE;
+                for (String key : collect.keySet()) {
+                    if (highest.isEmpty()) highest = key;
 
-                if(currentMax < collect.get(key)){
-                    currentMax = collect.get(key);
-                    highest = key;
+                    if (currentMax < collect.get(key)) {
+                        currentMax = collect.get(key);
+                        highest = key;
+                    }
                 }
-            }
 
-            String finalHighest = highest;
+                String finalHighest = highest;
 
 //            deathTeller.newStory();
-            new BossBarTimer(plugin, highest + " has been voted for.", 10, () -> {
-                WerewolfPlayer p = getPlayerByName(finalHighest);
-                if(p != null){
-                    deathTeller.addDeath(p.getPlayer(), EnumDeadType.VOTE);
-                }
+                new BossBarTimer(plugin, highest + " has been voted for.", 10, () -> {
+                    WerewolfPlayer p = getPlayerByName(finalHighest);
+                    if (p != null) {
+                        deathTeller.addDeath(p.getPlayer(), EnumDeadType.VOTE);
+                    }
 
-                tellDeathStory();
-            }, playerList);
+                    tellDeathStory();
+                }, getPlayerList());
+            }else{
+                new BossBarTimer(plugin, "Nobody has been voted for. So a random player will be selected", 10, () -> {
+                    Random rnd = new Random();
+                    WerewolfPlayer p = playerList.get(rnd.nextInt(playerList.size() - 1));
+
+                    while(!p.isAlive()){
+                        p = playerList.get(rnd.nextInt(playerList.size() - 1));
+                    }
+
+                    deathTeller.addDeath(p.getPlayer(), EnumDeadType.VOTE);
+
+                    tellDeathStory();
+                }, getPlayerList());
+            }
 
             HandlerList.unregisterAll(burgerVoteScreen);
             burgerVoteScreen = null;
@@ -383,8 +400,6 @@ public class WerewolfGame implements Listener {
 //        deathTeller.newStory();
 
         updateStatus(GameStatus.WEREWOLFVOTE);
-
-        notifyRole(WerewolfRole.class, "Stand by a player you want to vote for");
 
         NearbySelector dinnerSelector = new NearbySelector(this, WerewolfRole.class);
         plugin.setupWaiter(1, 30, "The wolves are selecting a player from the menu [%time%]", () -> {
@@ -484,7 +499,8 @@ public class WerewolfGame implements Listener {
 
     private void theNightHasPassed() {
         updateStatus(GameStatus.DAY);
-        tellDeathStory();
+
+        new BossBarTimer(plugin, "Everyone is waking up...", 10, this::tellDeathStory, getPlayerList());
     }
 
     private void tellDeathStory(){
@@ -493,9 +509,7 @@ public class WerewolfGame implements Listener {
             deathTeller.addDeath(ghost, EnumDeadType.LEFT);
         }
 
-        new BossBarTimer(plugin, "Everyone is waking up...", 10, () -> {
-            deathTeller.tellStory(this, this::checkIfGameHasEnded);
-        }, getPlayerList());
+        deathTeller.tellStory(this, this::checkIfGameHasEnded);
     }
 
     public DeathTeller getDeathTeller(){
@@ -505,16 +519,20 @@ public class WerewolfGame implements Listener {
 
     private void checkIfGameHasEnded(){
         List<WerewolfPlayer> livingPlayers = playerList.stream().filter(WerewolfPlayer::isAlive).collect(Collectors.toList());
-        WerewolfPlayer lastChecked = livingPlayers.get(0);
+        WerewolfPlayer lastChecked = null;
         boolean clean = true;
 
         for (WerewolfPlayer livingPlayer : livingPlayers) {
-            if(lastChecked.getRole().getClass() != livingPlayer.getRole().getClass()){
-                clean = false;
+            if(livingPlayer.isAlive()) {
+                if(lastChecked == null) lastChecked = livingPlayer;
+
+                if (lastChecked.getRole().getClass() != livingPlayer.getRole().getClass()) {
+                    clean = false;
+                }
             }
         }
 
-        if(!clean){
+        if(clean){
             IRole winningRole = lastChecked.getRole();
             updateStatus(GameStatus.ENDED);
 

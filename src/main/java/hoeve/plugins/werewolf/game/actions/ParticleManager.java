@@ -35,6 +35,8 @@ public class ParticleManager implements Runnable {
     @Override
     public void run() {
         for (WerewolfPlayer player : game.getPlayerList()) {
+            spawnParticle(player, Particle.END_ROD, game.getGameMaster().getPlayer().getLocation());
+
             if (!player.isAlive()) continue;
             for (WerewolfPlayer particleOnThisPlayer : game.getPlayerList()) {
 
