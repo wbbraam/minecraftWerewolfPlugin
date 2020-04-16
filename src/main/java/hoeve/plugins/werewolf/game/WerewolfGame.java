@@ -107,7 +107,7 @@ public class WerewolfGame implements Listener {
 
         playerList.get(2).setRole(new WerewolfRole());
         playerList.get(1).setRole(new WitchRole());
-        playerList.get(0).setRole(new CupidoRole());
+        playerList.get(0).setRole(new HunterRole());
 
         for (int i = 3; i < playerList.size(); i++) {
             playerList.get(i).setRole(new CommonRole());
@@ -538,6 +538,27 @@ public class WerewolfGame implements Listener {
 
             for (WerewolfPlayer gamePlayer : getPlayerList()) {
                 notifyPlayer(gamePlayer, winningRole.getRoleName() + ChatColor.RESET + "[" + getPlayersByRole(winningRole.getClass()).stream().map(w -> w.getPlayer().getDisplayName()).collect(Collectors.joining(", ")) + "] has won the game !");
+            }
+        }else {
+            for (WerewolfPlayer hunter : getPlayersByRole(HunterRole.class)) {
+                if (!hunter.isAlive() && !((HunterRole) hunter.getRole()).hasTakenRevenge()) {
+                    new BossBarTimer(this.plugin, "But after the announcement something wierd happend", 10, () -> {
+                        NearbySelector hunterSelector = new NearbySelector(this, Collections.singletonList(hunter.getPlayer()));
+                        hunterSelector.isEveryoneVisible = true;
+
+                        this.plugin.setupWaiter(1, 30, "The hunter is going to take revenge [%time%]", () -> {
+                            hunterSelector.stop();
+                            ((HunterRole) hunter.getRole()).setTakenRevenge();
+
+                            deathTeller.addDeath(hunterSelector.getTopSelectedPlayer(), EnumDeadType.HUNTER);
+                            this.tellDeathStory();
+                        });
+
+                        hunterSelector.start();
+
+
+                    }, getPlayerList());
+                }
             }
         }
     }

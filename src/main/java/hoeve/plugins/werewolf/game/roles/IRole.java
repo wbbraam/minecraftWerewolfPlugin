@@ -34,7 +34,7 @@ public abstract class IRole {
                 return "has died of some " + ChatColor.DARK_GREEN + "poison";
             case HUNTER:
                 game.notifyPlayer(meDied, "You died because the hunter pointed his gun to you");
-                return "has died because he/she met a angry " + ChatColor.GOLD + "hunter";
+                return "has died because the " + ChatColor.GOLD + "hunter" + ChatColor.RESET + " gun was bewitched and took his/her soul";
             case WOLVES:
                 game.notifyPlayer(meDied, "Seems like you were chosen to be eaten.");
                 return "has been killed by the " + ChatColor.DARK_RED + "wolves";

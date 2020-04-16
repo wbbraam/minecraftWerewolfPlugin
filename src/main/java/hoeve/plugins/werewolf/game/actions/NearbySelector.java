@@ -1,10 +1,8 @@
 package hoeve.plugins.werewolf.game.actions;
 
-import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.roles.IRole;
-import hoeve.plugins.werewolf.game.roles.WerewolfRole;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -20,11 +18,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +38,8 @@ public class NearbySelector implements Runnable, Listener {
 
     private List<Player> selectables;
 
+    public boolean isEveryoneVisible = false;
+
     public NearbySelector(WerewolfGame game, List<Player> selectors) {
         this.game = game;
         this.selectors = selectors;
@@ -56,13 +54,15 @@ public class NearbySelector implements Runnable, Listener {
     public void start() {
         List<Player> playerList = game.getPlayerList().stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
 
-        for (Player player : playerList) {
-            if(game.getGameMaster().getPlayer() == player) continue;
+        if(!isEveryoneVisible) {
+            for (Player player : playerList) {
+                if (game.getGameMaster().getPlayer() == player) continue;
 
-            if(player.getGameMode() != GameMode.SPECTATOR) {
-                if (!selectors.contains(player)) { // if player is a selector, we dont want to hide the players for them
-                    for (Player hideThisPlayer : playerList) {
-                        player.hidePlayer(game.getPlugin(), hideThisPlayer);
+                if (player.getGameMode() != GameMode.SPECTATOR) {
+                    if (!selectors.contains(player)) { // if player is a selector, we dont want to hide the players for them
+                        for (Player hideThisPlayer : playerList) {
+                            player.hidePlayer(game.getPlugin(), hideThisPlayer);
+                        }
                     }
                 }
             }

@@ -11,31 +11,20 @@ import org.bukkit.ChatColor;
  * Created by DeStilleGast 7-4-2020
  */
 public class HunterRole extends IRole {
+    
+    private boolean takenRevenge = false;
+    
     @Override
     public String getRoleName() {
         return ChatColor.GOLD + "Hunter";
     }
 
-    @Override
-    public WaitTillAllReady firstNight(WerewolfGame game, WerewolfPlayer player, WaitTillAllReady waiter) {
-        return null;
+
+    public boolean hasTakenRevenge(){
+        return this.takenRevenge;
     }
 
-    @Override
-    public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
-        switch (status) {
-            case STARTUP:
-                game.notifyPlayer(player, "You are a " + getRoleName());
-
-        }
-    }
-
-    @Override
-    public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
-        if(deadType == EnumDeadType.VOTE || deadType == EnumDeadType.WOLVES){
-            // let him kill someone (bow and arrow)
-        }
-
-        return "to be made";
+    public void setTakenRevenge(){
+        this.takenRevenge = true;
     }
 }

@@ -7,7 +7,6 @@ import hoeve.plugins.werewolf.game.roles.WerewolfRole;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Random;
@@ -35,20 +34,28 @@ public class ParticleManager implements Runnable {
     @Override
     public void run() {
         for (WerewolfPlayer player : game.getPlayerList()) {
-            spawnParticle(player, Particle.END_ROD, game.getGameMaster().getPlayer().getLocation());
+
+            // Spawn particle on gamemaster if the player can see the game master
+            if (player.getPlayer().canSee(game.getGameMaster().getPlayer()))
+                spawnParticle(player, Particle.END_ROD, game.getGameMaster().getPlayer().getLocation());
 
             if (!player.isAlive()) continue;
             for (WerewolfPlayer particleOnThisPlayer : game.getPlayerList()) {
+                // skip particle on this player because (s)he can see him/her
+                if (!player.getPlayer().canSee(particleOnThisPlayer.getPlayer())) continue;
 
+                // loved one
                 if (player.getLover() != null && player.getLover() == particleOnThisPlayer) {
                     spawnParticle(player, Particle.HEART, player.getLover().getPlayer().getLocation());
                 }
 
-                if(player.getRole() instanceof CupidoRole && particleOnThisPlayer.getLover() != null){
-                    if(particleOnThisPlayer.isAlive())
+                // Cupido
+                if (player.getRole() instanceof CupidoRole && particleOnThisPlayer.getLover() != null) {
+                    if (particleOnThisPlayer.isAlive())
                         spawnParticle(player, Particle.HEART, particleOnThisPlayer.getPlayer().getLocation());
                 }
 
+                // Werewolves
                 if (player.getRole() instanceof WerewolfRole && particleOnThisPlayer.getRole() instanceof WerewolfRole) {
                     spawnParticle(player, Particle.FLAME, particleOnThisPlayer.getPlayer().getLocation());
                 }
@@ -56,11 +63,13 @@ public class ParticleManager implements Runnable {
         }
 
         for (WerewolfPlayer player : game.getPlayerList()) {
-            if(player.isAlive()) {
-                if(player.getRole() instanceof WerewolfRole){
+            if (player.isAlive()) {
+                // Werewolf
+                if (player.getRole() instanceof WerewolfRole) {
                     spawnParticle(game.getGameMaster(), Particle.FLAME, player.getPlayer().getLocation());
                 }
 
+                // Loved one
                 if (player.getLover() != null) {
                     spawnParticle(game.getGameMaster(), Particle.HEART, player.getPlayer().getLocation());
                 }
@@ -69,7 +78,7 @@ public class ParticleManager implements Runnable {
     }
 
     private void spawnParticle(WerewolfPlayer player, Particle particle, Location location) {
-        if(!player.isAlive()) return;
+        if (!player.isAlive()) return;
 //        Location loc = player.getLocation();
         Location tmp = new Location(location.getWorld(), Math.sin(magicNumber) * 0.55, 0.1, Math.cos(magicNumber) * 0.55);
 
