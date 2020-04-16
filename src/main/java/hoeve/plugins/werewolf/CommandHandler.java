@@ -107,10 +107,13 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                         break;
                     case "roles":
                         for (WerewolfPlayer pl : werewolfGame.getPlayerList()) {
+                            if(pl.equals(werewolfGame.getGameMaster())) continue;
+
                             notify(sender, pl.getPlayer().getName() + " -  " + pl.getRole().getRoleName());
                         }
                         break;
                     case "kill":
+                    case "kick":
                         if (sender.equals(werewolfGame.getGameMaster().getPlayer())) {
                             if (args.length == 1) {
                                 notify(sender, "Please specify a name");
@@ -118,17 +121,26 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                                 WerewolfPlayer target = werewolfGame.getPlayerByName(args[1]);
                                 if (target != null) {
                                     werewolfGame.getDeathTeller().addDeath(target.getPlayer(), EnumDeadType.GAMEMASTER);
+                                    notify(sender, "Player will be death on by the next story");
                                 } else {
                                     notify(sender, "Could not find player");
                                 }
                             }
                         }
+                        break;
+                    case "test":
+                        werewolfGame.checkIfGameHasEnded();
+                        break;
+                    case "end":
+                        werewolfGame.finishGame();
+                        notify(sender, "Game ended");
 
                 }
             } else {
                 if ("new".equals(args[0].toLowerCase()) && player.hasPermission("werewolf.gamemaster")) {
                     werewolfGame.setGameMaster(player);
                     plugin.getScoreboardManager().updateScoreboards(werewolfGame);
+                    werewolfGame.notifyPlayer(sender, "New game started");
                 }
             }
 

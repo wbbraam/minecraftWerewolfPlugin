@@ -34,13 +34,15 @@ public class BurgerVoteScreen extends BaseScreen {
 
     @Override
     protected void onInventoryClick(Player player, ItemStack itemStack, InventoryClickEvent e) {
-        if(itemStack.getType() == Material.PLAYER_HEAD){
-            SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
+        if(game.getPlayer(player).isAlive()) {
+            if (itemStack.getType() == Material.PLAYER_HEAD) {
+                SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
 //            OfflinePlayer votedPlayer = skullMeta.getOwningPlayer();
 
-            voteMap.put(player, itemStack.getItemMeta().getDisplayName());
+                voteMap.put(player, itemStack.getItemMeta().getDisplayName());
 
-            prepareInventory();
+                prepareInventory();
+            }
         }
     }
 
@@ -49,7 +51,9 @@ public class BurgerVoteScreen extends BaseScreen {
         myInv.clear();
 
         game.getPlayerList().forEach(p -> {
-            addItem(createVoteHead(p.getPlayer()));
+            if(!p.equals(game.getGameMaster())) {
+                addItem(createVoteHead(p.getPlayer()));
+            }
         });
     }
 

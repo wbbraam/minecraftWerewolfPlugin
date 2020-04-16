@@ -91,7 +91,7 @@ public class WerewolfGame implements Listener {
             }
         }
 
-        if(gameCenter == null){
+        if (gameCenter == null) {
             notifyGameMaster("Could not find campfire !!");
             return;
         }
@@ -107,7 +107,7 @@ public class WerewolfGame implements Listener {
 
         playerList.get(2).setRole(new WerewolfRole());
         playerList.get(1).setRole(new WitchRole());
-        playerList.get(0).setRole(new HunterRole());
+        playerList.get(0).setRole(new CupidoRole());
 
         for (int i = 3; i < playerList.size(); i++) {
             playerList.get(i).setRole(new CommonRole());
@@ -184,8 +184,8 @@ public class WerewolfGame implements Listener {
         plugin.getScoreboardManager().removePlayer(player);
 
         // check if player is valid and was alive, notify GameMaster that someone has left the server
-        if(wwPlayer != null){
-            if(wwPlayer.isAlive()) {
+        if (wwPlayer != null) {
+            if (wwPlayer.isAlive()) {
                 wwPlayer.onPlayerLeave(this);
             }
         }
@@ -198,7 +198,7 @@ public class WerewolfGame implements Listener {
     }
 
     public WerewolfPlayer getPlayerByName(String name) {
-        return playerList.stream().filter(p -> p.getPlayer().getName().equals(name)).findFirst().orElse(null);
+        return playerList.stream().filter(p -> ChatColor.stripColor(p.getPlayer().getName()).equals(ChatColor.stripColor(name))).findFirst().orElse(null);
     }
 
     public List<WerewolfPlayer> getPlayersByRole(Class<? extends IRole> roleClass) {
@@ -228,7 +228,15 @@ public class WerewolfGame implements Listener {
      * Finish the game
      */
     public void finishGame() {
-        gamestatus = GameStatus.ENDED;
+        if (particleManager != null) {
+            particleManager.stop();
+        }
+
+        for (WerewolfPlayer player : getPlayerList()) {
+            removePlayer(player.getPlayer());
+        }
+
+        this.gameMaster = null;
     }
 
     /**
@@ -342,7 +350,7 @@ public class WerewolfGame implements Listener {
             burgerVoteScreen.closeInventory();
 
             Collection<String> voteList = burgerVoteScreen.getVoteMap().values();
-            if(!voteList.isEmpty()) {
+            if (!voteList.isEmpty()) {
                 Map<String, Long> collect = voteList.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
                 String highest = "";
@@ -367,12 +375,12 @@ public class WerewolfGame implements Listener {
 
                     tellDeathStory();
                 }, getPlayerList());
-            }else{
+            } else {
                 new BossBarTimer(plugin, "Nobody has been voted for. So a random player will be selected", 10, () -> {
                     Random rnd = new Random();
                     WerewolfPlayer p = playerList.get(rnd.nextInt(playerList.size() - 1));
 
-                    while(!p.isAlive()){
+                    while (!p.isAlive()) {
                         p = playerList.get(rnd.nextInt(playerList.size() - 1));
                     }
 
@@ -410,7 +418,6 @@ public class WerewolfGame implements Listener {
         });
         dinnerSelector.start();
     }
-
 
 
     private void wolvesHaveEaten(NearbySelector selectorWolfs) {
@@ -453,7 +460,7 @@ public class WerewolfGame implements Listener {
                     // no witch alive
                     theNightHasPassed();
                 }
-            }else {
+            } else {
                 theNightHasPassed();
             }
         }, getPlayerList());
@@ -503,7 +510,7 @@ public class WerewolfGame implements Listener {
         new BossBarTimer(plugin, "Everyone is waking up...", 10, this::tellDeathStory, getPlayerList());
     }
 
-    private void tellDeathStory(){
+    private void tellDeathStory() {
         List<Player> leftPlayersAreGone = new ArrayList<>(leftPlayers);
         for (Player ghost : leftPlayersAreGone) {
             deathTeller.addDeath(ghost, EnumDeadType.LEFT);
@@ -512,34 +519,50 @@ public class WerewolfGame implements Listener {
         deathTeller.tellStory(this, this::checkIfGameHasEnded);
     }
 
-    public DeathTeller getDeathTeller(){
+    public DeathTeller getDeathTeller() {
         return this.deathTeller;
     }
 
 
-    private void checkIfGameHasEnded(){
+    public void checkIfGameHasEnded() {
         List<WerewolfPlayer> livingPlayers = playerList.stream().filter(WerewolfPlayer::isAlive).collect(Collectors.toList());
-        WerewolfPlayer lastChecked = null;
-        boolean clean = true;
+        boolean wolfWin = true, villagerWin = true;
+        WerewolfPlayer lover = null;
 
         for (WerewolfPlayer livingPlayer : livingPlayers) {
-            if(livingPlayer.isAlive()) {
-                if(lastChecked == null) lastChecked = livingPlayer;
+            if (livingPlayer.isAlive()) {
 
-                if (lastChecked.getRole().getClass() != livingPlayer.getRole().getClass()) {
-                    clean = false;
+                if (livingPlayer.getRole() instanceof WerewolfRole) {
+                    // player is a werewolf, villagers lose
+                    villagerWin = false;
+                } else {
+                    // check if player has a lover and not marked wolf as lose
+                    // but if player has a lover and its lover is a werewolf, do nothing
+                    if (livingPlayer.getLover() == null || !(livingPlayer.getLover().getRole() instanceof WerewolfRole)) {
+                        wolfWin = false;
+                    }
+                }
+
+                if (livingPlayer.getLover() != null) {
+                    lover = livingPlayer.getLover();
                 }
             }
         }
 
-        if(clean){
-            IRole winningRole = lastChecked.getRole();
+        if (wolfWin || villagerWin) {
+            IRole winningRole = wolfWin ? new WerewolfRole() : new CommonRole();
+
             updateStatus(GameStatus.ENDED);
 
             for (WerewolfPlayer gamePlayer : getPlayerList()) {
-                notifyPlayer(gamePlayer, winningRole.getRoleName() + ChatColor.RESET + "[" + getPlayersByRole(winningRole.getClass()).stream().map(w -> w.getPlayer().getDisplayName()).collect(Collectors.joining(", ")) + "] has won the game !");
+                notifyPlayer(gamePlayer, winningRole.getRoleName() + ChatColor.RESET + " [" + getPlayersByRole(winningRole.getClass()).stream().map(w -> w.getPlayer().getDisplayName()).collect(Collectors.joining(", ")) + "] has won the game !");
+                if (lover != null) {
+                    notifyPlayer(gamePlayer, "But that is not everything, " + ChatColor.LIGHT_PURPLE + lover.getPlayer().getDisplayName() + ChatColor.RESET + " and " + ChatColor.LIGHT_PURPLE + lover.getLover().getPlayer().getDisplayName() + ChatColor.RESET + " were a couple and can life long and forever.");
+                }
             }
-        }else {
+
+
+        } else {
             for (WerewolfPlayer hunter : getPlayersByRole(HunterRole.class)) {
                 if (!hunter.isAlive() && !((HunterRole) hunter.getRole()).hasTakenRevenge()) {
                     new BossBarTimer(this.plugin, "But after the announcement something wierd happend", 10, () -> {

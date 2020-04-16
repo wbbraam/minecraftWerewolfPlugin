@@ -2,13 +2,19 @@ package hoeve.plugins.werewolf.game.scoreboards;
 
 import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
+import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by DeStilleGast 12-4-2020
@@ -32,21 +38,25 @@ public class WerewolfScoreboard {
             onGameMasterBoard(game);
         }else {
             if (game.getStatus() == GameStatus.PLAYERSELECT) {
-                createSidebar("Game status:", "Starting...", "", "Players: " + game.getPlayerList().size());
-                //                case STARTUP:
+                createSidebar("Game status:", "Starting...", "", "Players: " + (game.getPlayerList().size() - 1));
             } else {
-                createSidebar("Game status:", game.getStatus().name(), "", "Your role:", game.getPlayer(player).getRole().getRoleName(), "", "Players: " + game.getPlayerList().size());
+                createSidebar("Game status:", game.getStatus().name(), "", "Your role:", game.getPlayer(player).getRole().getRoleName(), "", "Players: " + (game.getPlayerList().size() - 1));
             }
         }
     }
 
     private void onGameMasterBoard(WerewolfGame game){
-        switch (game.getStatus()){
-            case PLAYERSELECT:
-                createSidebar("Game status:", "Starting...", "", "Players: " + game.getPlayerList().size());
-                break;
-            case STARTUP:
-//                createSidebar("Game status:", "Cupido is selecting");
+        if(game.getStatus() == GameStatus.PLAYERSELECT) {
+            createSidebar("Game status:", "Starting...", "", "Players: " + game.getPlayerList().size());
+        }else{
+            List<String> sidebarItems = new ArrayList<>(Arrays.asList("Game status:", game.getStatus().name(), "", "Players: " + game.getPlayerList().size(), ""));
+
+            game.getPlayerList().stream().filter(wp -> !wp.equals(game.getGameMaster())).map(WerewolfPlayer::getRole).distinct().forEach(r -> {
+                long playersWithRole = game.getPlayersByRole(r.getClass()).stream().filter(WerewolfPlayer::isAlive).count();
+                sidebarItems.add(r.getRoleName() + ChatColor.RESET + ": " + playersWithRole);
+            });
+
+            createSidebar(sidebarItems.toArray(new String[0]));
         }
     }
 
