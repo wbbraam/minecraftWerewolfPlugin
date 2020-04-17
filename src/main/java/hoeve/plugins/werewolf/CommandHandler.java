@@ -165,7 +165,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 //                return Lists.asList("new", "start", "join");
 //        }
 
-        if(werewolfGame.getGameMaster() != null){
+        if(werewolfGame.getGameMaster() == null){
             return Collections.singletonList("new");
         }
 
