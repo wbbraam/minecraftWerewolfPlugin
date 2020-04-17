@@ -1,12 +1,12 @@
 package hoeve.plugins.werewolf.game;
 
-import hoeve.plugins.werewolf.game.roles.IRole;
+import hoeve.plugins.werewolf.game.roles.BaseRole;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 public class WerewolfPlayer {
 
-    private IRole role = null;
+    private BaseRole role = null;
     private Boolean alive = true;
     private Player playerObject;
 
@@ -24,11 +24,11 @@ public class WerewolfPlayer {
     }
 
 
-    public IRole getRole() {
+    public BaseRole getRole() {
         return role;
     }
 
-    public void setRole(IRole role) {
+    public void setRole(BaseRole role) {
         this.role = role;
     }
 
@@ -44,10 +44,6 @@ public class WerewolfPlayer {
         return playerObject;
     }
 
-
-    public void onGameStatusChange(WerewolfGame game, GameStatus status) {
-        this.getRole().onGameStateChange(game, this, status);
-    }
 
     public void kill() {
         if (!this.isAlive()) return;

@@ -2,7 +2,7 @@ package hoeve.plugins.werewolf.game.actions;
 
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
-import hoeve.plugins.werewolf.game.roles.IRole;
+import hoeve.plugins.werewolf.game.roles.BaseRole;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -46,7 +46,7 @@ public class NearbySelector implements Runnable, Listener {
         this.selected = new HashMap<>();
     }
 
-    public NearbySelector(WerewolfGame game, Class<? extends IRole> byRole) {
+    public NearbySelector(WerewolfGame game, Class<? extends BaseRole> byRole) {
         this(game, game.getPlayersByRole(byRole).stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList()));
     }
 

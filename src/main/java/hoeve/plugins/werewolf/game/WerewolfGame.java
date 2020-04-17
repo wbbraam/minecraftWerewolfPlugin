@@ -5,9 +5,7 @@ import hoeve.plugins.werewolf.game.actions.NearbySelector;
 import hoeve.plugins.werewolf.game.actions.ParticleManager;
 import hoeve.plugins.werewolf.game.helpers.BossBarTimer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
-import hoeve.plugins.werewolf.game.interfaces.AskScreen;
-import hoeve.plugins.werewolf.game.interfaces.BurgerVoteScreen;
-import hoeve.plugins.werewolf.game.interfaces.CupidoScreen;
+import hoeve.plugins.werewolf.game.interfaces.*;
 import hoeve.plugins.werewolf.game.roles.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -17,7 +15,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -107,7 +104,7 @@ public class WerewolfGame implements Listener {
 
         playerList.get(2).setRole(new WerewolfRole());
         playerList.get(1).setRole(new WitchRole());
-        playerList.get(0).setRole(new CupidoRole());
+        playerList.get(0).setRole(new OracleRole());
 
         for (int i = 3; i < playerList.size(); i++) {
             playerList.get(i).setRole(new CommonRole());
@@ -169,6 +166,10 @@ public class WerewolfGame implements Listener {
         playerList.add(new WerewolfPlayer(player));
         plugin.getScoreboardManager().addPlayer(player);
 
+        for (WerewolfPlayer wPlayer : getPlayerList(true)) {
+            notifyPlayer(wPlayer, player.getDisplayName() + " has joined the game.");
+        }
+
         return true;
     }
 
@@ -201,7 +202,7 @@ public class WerewolfGame implements Listener {
         return playerList.stream().filter(p -> ChatColor.stripColor(p.getPlayer().getName()).equals(ChatColor.stripColor(name))).findFirst().orElse(null);
     }
 
-    public List<WerewolfPlayer> getPlayersByRole(Class<? extends IRole> roleClass) {
+    public List<WerewolfPlayer> getPlayersByRole(Class<? extends BaseRole> roleClass) {
         return playerList.stream().filter(p -> p.getRole().getClass() == roleClass).collect(Collectors.toList());
     }
 
@@ -280,7 +281,7 @@ public class WerewolfGame implements Listener {
         notifyPlayer(player.getPlayer(), message);
     }
 
-    public void notifyRole(Class<? extends IRole> roleClass, String message) {
+    public void notifyRole(Class<? extends BaseRole> roleClass, String message) {
         for (WerewolfPlayer p : this.getPlayersByRole(roleClass)) {
             notifyPlayer(p, message);
         }
@@ -321,7 +322,7 @@ public class WerewolfGame implements Listener {
 
     public void startFirstNight() {
         List<WerewolfPlayer> cupidos = getPlayersByRole(CupidoRole.class);
-        WaitTillAllReady allWaiter = plugin.setupWaiter(cupidos.size(), 30, "Waiting for cupido(s)", null);
+        WaitTillAllReady allWaiter = plugin.setupWaiter(cupidos.size(), 30, "Waiting for cupido(s)", this::showLovedOneEachOther);
 
         updateStatus(GameStatus.CUPIDO);
         for (WerewolfPlayer cupido : cupidos) {
@@ -336,6 +337,10 @@ public class WerewolfGame implements Listener {
         }
     }
 
+    private void showLovedOneEachOther(){
+
+    }
+
     public void startDayVote() {
         updateStatus(GameStatus.BURGERVOTE);
         if (burgerVoteScreen != null) {
@@ -343,13 +348,9 @@ public class WerewolfGame implements Listener {
         }
 
         burgerVoteScreen = new BurgerVoteScreen(this);
-        Bukkit.getPluginManager().registerEvents(burgerVoteScreen, plugin);
+//        Bukkit.getPluginManager().registerEvents(burgerVoteScreen, plugin);
 
-        for (WerewolfPlayer werewolfPlayer : playerList) {
-            burgerVoteScreen.openInventory(werewolfPlayer.getPlayer());
-        }
-
-        plugin.setupWaiter(playerList.size(), 60, "Waiting for everyone to cast there vote [%time%]", () -> {
+        WaitTillAllReady burgerSelection = plugin.setupWaiter((int) playerList.stream().filter(WerewolfPlayer::isAlive).count(), 60, "Waiting for everyone to cast there vote [%time%]", () -> {
             burgerVoteScreen.closeInventory();
 
             Collection<String> voteList = burgerVoteScreen.getVoteMap().values();
@@ -376,7 +377,7 @@ public class WerewolfGame implements Listener {
                         deathTeller.addDeath(p.getPlayer(), EnumDeadType.VOTE);
                     }
 
-                    tellDeathStory();
+                    this.tellDeathStory();
                 }, getPlayerList(true));
             } else {
                 new BossBarTimer(plugin, "Nobody has been voted for. So a random player will be selected", 10, () -> {
@@ -389,13 +390,19 @@ public class WerewolfGame implements Listener {
 
                     deathTeller.addDeath(p.getPlayer(), EnumDeadType.VOTE);
 
-                    tellDeathStory();
+                    this.tellDeathStory();
                 }, getPlayerList(true));
             }
 
             HandlerList.unregisterAll(burgerVoteScreen);
             burgerVoteScreen = null;
         });
+
+        burgerVoteScreen.prepareInternalInventory(burgerSelection);
+        for (WerewolfPlayer werewolfPlayer : playerList) {
+            burgerVoteScreen.openInventory(werewolfPlayer.getPlayer());
+        }
+
     }
 
     public void showDayVote(Player player) {
@@ -420,6 +427,20 @@ public class WerewolfGame implements Listener {
             centerPlayers();
         });
         dinnerSelector.start();
+
+        List<WerewolfPlayer> oracleList = getPlayersByRole(OracleRole.class);
+        if(!oracleList.isEmpty()){
+            List<BaseScreen> screens = new ArrayList<>();
+            WaitTillAllReady oracleSelectors = plugin.setupWaiter(oracleList.size(), 30, "The oracle is looking in his glass boll", () -> { screens.forEach(BaseScreen::closeInventory); });
+
+            for(WerewolfPlayer oracle : getPlayersByRole(OracleRole.class)){
+                if(!oracle.isAlive()) continue;
+
+                OracleScreen oracleScreen = new OracleScreen(this);
+                oracleScreen.prepareInternalInventory(oracleSelectors);
+                oracleScreen.openInventory(oracle.getPlayer());
+            }
+        }
     }
 
 
@@ -557,7 +578,7 @@ public class WerewolfGame implements Listener {
         }
 
         if (wolfWin || villagerWin) {
-            IRole winningRole = wolfWin ? new WerewolfRole() : new CommonRole();
+            BaseRole winningRole = wolfWin ? new WerewolfRole() : new CommonRole();
 
             updateStatus(GameStatus.ENDED);
 

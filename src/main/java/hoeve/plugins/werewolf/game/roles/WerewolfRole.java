@@ -8,7 +8,7 @@ import org.bukkit.ChatColor;
 /**
  * Created by DeStilleGast 7-4-2020
  */
-public class WerewolfRole extends IRole {
+public class WerewolfRole extends BaseRole {
 
     @Override
     public String getRoleName() {

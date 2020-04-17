@@ -2,8 +2,11 @@ package hoeve.plugins.werewolf.game.actions;
 
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
+import hoeve.plugins.werewolf.game.interfaces.OracleScreen;
 import hoeve.plugins.werewolf.game.roles.CupidoRole;
+import hoeve.plugins.werewolf.game.roles.OracleRole;
 import hoeve.plugins.werewolf.game.roles.WerewolfRole;
+import hoeve.plugins.werewolf.game.roles.WitchRole;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -60,19 +63,27 @@ public class ParticleManager implements Runnable {
                     spawnParticle(player, Particle.FLAME, particleOnThisPlayer.getPlayer().getLocation());
                 }
             }
-        }
 
-        for (WerewolfPlayer player : game.getPlayerList(false)) {
-            if (player.isAlive()) {
-                // Werewolf
-                if (player.getRole() instanceof WerewolfRole) {
-                    spawnParticle(game.getGameMaster(), Particle.FLAME, player.getPlayer().getLocation());
-                }
+            // Particle for gamemaster
+            // Werewolf
+            if (player.getRole() instanceof WerewolfRole) {
+                spawnParticle(game.getGameMaster(), Particle.FLAME, player.getPlayer().getLocation());
+            }
 
-                // Loved one
-                if (player.getLover() != null) {
-                    spawnParticle(game.getGameMaster(), Particle.HEART, player.getPlayer().getLocation());
-                }
+            // Witch
+            if(player.getRole() instanceof WitchRole){
+                spawnParticle(player, Particle.SPELL_WITCH, player.getPlayer().getLocation());
+                spawnParticle(game.getGameMaster(), Particle.SPELL_WITCH, player.getPlayer().getLocation());
+            }
+
+            // Oracle
+            if(player.getRole() instanceof OracleRole){
+                spawnParticle(player, Particle.CLOUD, player.getPlayer().getLocation());
+            }
+
+            // Loved one
+            if (player.getLover() != null) {
+                spawnParticle(game.getGameMaster(), Particle.HEART, player.getPlayer().getLocation());
             }
         }
     }

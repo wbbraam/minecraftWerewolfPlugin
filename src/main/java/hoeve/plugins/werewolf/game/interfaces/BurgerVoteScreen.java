@@ -21,11 +21,15 @@ public class BurgerVoteScreen extends BaseScreen {
     private Map<Player, String> voteMap;
 
     public BurgerVoteScreen(WerewolfGame game) {
-        super(game, "Who do we throw on the fire ?", (int)Math.ceil(game.getPlayerList(false).size() / 9D));
+        this(game, "Who do we throw on the fire ?");
+//        Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
+    }
+
+    public BurgerVoteScreen(WerewolfGame game, String title) {
+        super(game, title, (int)Math.ceil(game.getPlayerList(false).size() / 9D));
+
         resetVote();
         prepareInventory();
-
-        Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
     }
 
     public void resetVote(){
@@ -36,12 +40,10 @@ public class BurgerVoteScreen extends BaseScreen {
     protected void onInventoryClick(Player player, ItemStack itemStack, InventoryClickEvent e) {
         if(game.getPlayer(player).isAlive()) {
             if (itemStack.getType() == Material.PLAYER_HEAD) {
-                SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
-//            OfflinePlayer votedPlayer = skullMeta.getOwningPlayer();
-
                 voteMap.put(player, itemStack.getItemMeta().getDisplayName());
 
                 prepareInventory();
+                waitTillAllReady.markReady(game.getPlayer(player));
             }
         }
     }

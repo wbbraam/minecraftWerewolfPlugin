@@ -66,11 +66,18 @@ public class DeathTeller {
                         case VOTE:
                             // Died because of vote
                             actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " was throwed on the fire...", 10, deadCharacter::kill, players));
+                            if(customDeadMessage != null && !customDeadMessage.isEmpty()){
+                                actions.add(() -> new BossBarTimer(game.getPlugin(), customDeadMessage, 10, null, players));
+                            }
                             break;
                         case LEFT:
                             // Died because (s)he left
                             actions.add(() -> new BossBarTimer(game.getPlugin(), "Player " + deathName + " went missing", 10, deadCharacter::kill, players));
-                            actions.add(() -> new BossBarTimer(game.getPlugin(), "The town decided that he/she was gone for good", 10, null, players));
+                            if(customDeadMessage != null && !customDeadMessage.isEmpty()){
+                                actions.add(() -> new BossBarTimer(game.getPlugin(), customDeadMessage, 10, null, players));
+                            }else {
+                                actions.add(() -> new BossBarTimer(game.getPlugin(), "The town decided that he/she was gone for good", 10, null, players));
+                            }
 
                             break;
                         case GAMEMASTER:
