@@ -18,6 +18,7 @@ public class OracleRole extends BaseRole {
     @Override
     public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
         // all the knowledge is lost
-        return "to be made, but his/her knowledge are lost for ever";
+//        return "his/her knowledge are lost for ever";
+        return "alles wat hij/zij wist over het groepje is nu voor altijd kwijt";
     }
 }

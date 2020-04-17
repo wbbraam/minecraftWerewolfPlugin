@@ -39,12 +39,15 @@ public class CupidoRole extends BaseRole {
 
         if(deadType == EnumDeadType.VOTE){
             if(lovedOneStillAlive) {
-                return "With a good feeling about his choice, (s)he left the campfire";
+//                return "With a good feeling about his choice, (s)he left the campfire";
+                return "heeft met een goed gevoel over zijn keuze heeft hij/zij het kampvuur verlaten";
             }else{
-                return "With a bad feeling, (s)he felt guilty and has vanished quickly";
+//                return "With a bad feeling, (s)he felt guilty and has vanished quickly";
+                return "heeft met een naar gevoel snel het dorp verlaten";
             }
         }else if(deadType == EnumDeadType.LEFT){
-            return "(s)he must have been feeling so bad because:";
+//            return "(s)he must have been feeling so bad because:";
+            return "had blijkbaar een heel slecht gevoel, want:";
         }
 
         return originalMessage;

@@ -3,6 +3,7 @@ package hoeve.plugins.werewolf.game.scoreboards;
 import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
+import hoeve.plugins.werewolf.game.roles.BaseRole;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -13,8 +14,6 @@ import org.bukkit.scoreboard.Scoreboard;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by DeStilleGast 12-4-2020
@@ -40,7 +39,8 @@ public class WerewolfScoreboard {
             if (game.getStatus() == GameStatus.PLAYERSELECT) {
                 createSidebar("Game status:", "Starting...", "", "Players: " + (game.getPlayerList(false).size()));
             } else {
-                createSidebar("Game status:", game.getStatus().name(), "", "Your role:", game.getPlayer(player).getRole().getRoleName(), "", "Players: " + (game.getPlayerList(false).size()));
+                BaseRole playerRole = game.getPlayer(player).getRole();
+                createSidebar("Game status:", game.getStatus().name(), "", "Your role:", playerRole != null ? playerRole.getRoleName() : "Geen", "", "Players: " + (game.getPlayerList(false).size()));
             }
         }
     }
