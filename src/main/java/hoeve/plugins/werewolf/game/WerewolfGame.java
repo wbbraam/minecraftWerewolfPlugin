@@ -441,17 +441,21 @@ public class WerewolfGame implements Listener {
 
         List<WerewolfPlayer> oracleList = getPlayersByRole(OracleRole.class);
         if(!oracleList.isEmpty()){
-            List<BaseScreen> screens = new ArrayList<>();
+            if(oracleList.stream().allMatch(WerewolfPlayer::isAlive)) {
+                List<BaseScreen> screens = new ArrayList<>();
 //            WaitTillAllReady oracleSelectors = plugin.setupWaiter(oracleList.size(), 30, "The oracle is looking in his glass boll", () -> { screens.forEach(BaseScreen::closeInventory); });
-            WaitTillAllReady oracleSelectors = plugin.setupWaiter(oracleList.size(), 30, "De ziener is aan het kijken", () -> { screens.forEach(BaseScreen::closeInventory); });
+                WaitTillAllReady oracleSelectors = plugin.setupWaiter(oracleList.size(), 30, "De ziener is aan het kijken", () -> {
+                    screens.forEach(BaseScreen::closeInventory);
+                });
 
-            for(WerewolfPlayer oracle : getPlayersByRole(OracleRole.class)){
-                if(!oracle.isAlive()) continue;
+                for (WerewolfPlayer oracle : getPlayersByRole(OracleRole.class)) {
+                    if (!oracle.isAlive()) continue;
 
-                OracleScreen oracleScreen = new OracleScreen(this);
-                oracleScreen.prepareInternalInventory(oracleSelectors);
-                oracleScreen.openInventory(oracle.getPlayer());
-                screens.add(oracleScreen);
+                    OracleScreen oracleScreen = new OracleScreen(this);
+                    oracleScreen.prepareInternalInventory(oracleSelectors);
+                    oracleScreen.openInventory(oracle.getPlayer());
+                    screens.add(oracleScreen);
+                }
             }
         }
     }
