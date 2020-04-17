@@ -10,7 +10,6 @@ import hoeve.plugins.werewolf.game.roles.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -66,12 +65,6 @@ public class WerewolfGame implements Listener {
      * Start the game, give every player a role
      */
     public void startGame() {
-//        cardDeck.resetDeck(playerList.size());
-//        for (WerewolfPlayer player : playerList) {
-//            //System.out.println("Give card to:" + player.getName());
-//            //System.out.println("Cards left before dealing:"+ cardDeck.getDeckSize());
-//            player.setRole(cardDeck.drawCard());
-//        }
 
         Location gameMasterLocation = gameMaster.getPlayer().getLocation();
 
@@ -102,13 +95,22 @@ public class WerewolfGame implements Listener {
             werewolfPlayer.getPlayer().setGameMode(GameMode.ADVENTURE);
         }
 
-        playerList.get(2).setRole(new WerewolfRole());
-        playerList.get(1).setRole(new WitchRole());
-        playerList.get(0).setRole(new OracleRole());
-
-        for (int i = 3; i < playerList.size(); i++) {
-            playerList.get(i).setRole(new CommonRole());
+        cardDeck.resetDeck(playerList.size());
+        for (WerewolfPlayer player : playerList) {
+            //System.out.println("Give card to:" + player.getName());
+            //System.out.println("Cards left before dealing:"+ cardDeck.getDeckSize());
+            player.setRole(cardDeck.drawCard());
+            plugin.getLogger().info("Giving card to: " + player.getName() + " he/she is now " + player.getRole().getRoleName());
         }
+
+        //
+//        playerList.get(2).setRole(new WerewolfRole());
+//        playerList.get(1).setRole(new WitchRole());
+//        playerList.get(0).setRole(new OracleRole());
+//
+//        for (int i = 3; i < playerList.size(); i++) {
+//            playerList.get(i).setRole(new CommonRole());
+//        }
 
         if (particleManager != null) {
             particleManager.stop();
