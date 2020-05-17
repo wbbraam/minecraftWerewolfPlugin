@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -18,7 +19,9 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by DeStilleGast 12-4-2020
@@ -37,6 +40,8 @@ public abstract class BaseScreen implements InventoryHolder, Listener {
     public BaseScreen(WerewolfGame game, String title, int rows) {
         this.game = game;
         this.myInv = Bukkit.createInventory(this, rows * 9, title);
+
+        Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
     }
 
     @Override
@@ -111,8 +116,10 @@ public abstract class BaseScreen implements InventoryHolder, Listener {
     }
 
     public void closeInventory(){
-        for (HumanEntity viewer : myInv.getViewers()) {
+        for (HumanEntity viewer : new ArrayList<>(myInv.getViewers())) {
             viewer.closeInventory();
         }
+
+        HandlerList.unregisterAll(this);
     }
 }

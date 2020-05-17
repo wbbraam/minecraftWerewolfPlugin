@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.Random;
 
 public class WerewolfCardDeck {
-    private ArrayList<IRole> playingCards = new ArrayList<>();
+    private ArrayList<BaseRole> playingCards = new ArrayList<>();
 
     public boolean resetDeck(Integer playerAmount){
 
@@ -32,7 +32,7 @@ public class WerewolfCardDeck {
 
 
         // Special roles
-        playingCards.add(new SeeerRole());
+        playingCards.add(new OracleRole());
         playingCards.add(new WitchRole());
         playingCards.add(new HunterRole());
         playingCards.add(new CupidoRole());
@@ -47,7 +47,7 @@ public class WerewolfCardDeck {
 
         for (int i = 0; i < werewolfAmount; i++)
         {
-            playingCards.add(new WereWolfRole());
+            playingCards.add(new WerewolfRole());
         }
 
         //Shuffle the cards ;)
@@ -57,10 +57,10 @@ public class WerewolfCardDeck {
     }
 
     private Random randomSeed = new Random();
-    public IRole drawCard() {
+    public BaseRole drawCard() {
         int randomInteger = randomSeed.nextInt(playingCards.size());
 
-        IRole roleToReturn = playingCards.get(randomInteger);
+        BaseRole roleToReturn = playingCards.get(randomInteger);
         playingCards.remove(randomInteger);
 
         return roleToReturn;

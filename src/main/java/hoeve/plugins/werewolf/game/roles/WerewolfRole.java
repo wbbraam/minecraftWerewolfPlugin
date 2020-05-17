@@ -8,34 +8,22 @@ import org.bukkit.ChatColor;
 /**
  * Created by DeStilleGast 7-4-2020
  */
-public class WitchRole extends BaseRole {
+public class WerewolfRole extends BaseRole {
+
     @Override
     public String getRoleName() {
-        return ChatColor.DARK_PURPLE + "Witch";
+        return ChatColor.DARK_RED + "Werewolf";
     }
-
 
     @Override
     public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
-        // drop potions ?
+        // Tell other wolves that one of there friends died
+        if (deadType == EnumDeadType.LOVE) {
+            game.notifyRole(WerewolfRole.class, "One of your family has died out of love");
+        } else {
+            game.notifyRole(WerewolfRole.class, "One of your family has been killed");
+        }
 
         return super.onDead(game, meDied, deadType);
-    }
-
-    private boolean elixer = true, poison = true;
-    public boolean hasElixer() {
-        return elixer;
-    }
-
-    public boolean hasPoison(){
-        return poison;
-    }
-
-    public void consumeElixer(){
-        elixer = false;
-    }
-
-    public void consumePoison(){
-        poison = false;
     }
 }

@@ -1,10 +1,13 @@
 package hoeve.plugins.werewolf.game.actions;
 
-import hoeve.plugins.werewolf.WerewolfPlugin;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
-import hoeve.plugins.werewolf.game.roles.IRole;
+import hoeve.plugins.werewolf.game.roles.BaseRole;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,11 +18,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -35,24 +36,32 @@ public class NearbySelector implements Runnable, Listener {
 
     private final PotionEffect selectEffect = new PotionEffect(PotionEffectType.GLOWING, 10, 1, false, false, false);
 
+    private List<Player> selectables;
+
+    public boolean isEveryoneVisible = false;
+
     public NearbySelector(WerewolfGame game, List<Player> selectors) {
         this.game = game;
         this.selectors = selectors;
         this.selected = new HashMap<>();
     }
 
-    public NearbySelector(WerewolfGame game, Class<? extends IRole> byRole) {
+    public NearbySelector(WerewolfGame game, Class<? extends BaseRole> byRole) {
         this(game, game.getPlayersByRole(byRole).stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList()));
     }
 
 
     public void start() {
-        List<Player> playerList = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
+        List<Player> playerList = game.getPlayerList(false).stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
 
-        for (Player player : playerList) {
-            if (!selectors.contains(player)) { // if player is a selector, we dont want to hide the players for them
-                for (Player hideThisPlayer : playerList) {
-                    player.hidePlayer(game.getPlugin(), hideThisPlayer);
+        if(!isEveryoneVisible) {
+            for (Player player : playerList) {
+                if (player.getGameMode() != GameMode.SPECTATOR) {
+                    if (!selectors.contains(player)) { // if player is a selector, we dont want to hide the players for them
+                        for (Player hideThisPlayer : playerList) {
+                            player.hidePlayer(game.getPlugin(), hideThisPlayer);
+                        }
+                    }
                 }
             }
         }
@@ -60,6 +69,13 @@ public class NearbySelector implements Runnable, Listener {
         game.centerPlayers();
         task = Bukkit.getScheduler().runTaskTimer(game.getPlugin(), this, 5, 5);
         Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
+
+        selectables = game.getPlayerList(false).stream().filter(WerewolfPlayer::isAlive).map(WerewolfPlayer::getPlayer).filter(p -> !selectors.contains(p)).collect(Collectors.toList());
+        selectables.remove(game.getGameMaster().getPlayer());
+
+        for (Player selector : selectors) {
+            game.notifyPlayer(selector, "Stand by a player you want to vote for");
+        }
     }
 
     public void stop() {
@@ -68,7 +84,7 @@ public class NearbySelector implements Runnable, Listener {
 
         game.centerPlayers();
 
-        List<Player> playerList = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
+        List<Player> playerList = game.getPlayerList(true).stream().map(WerewolfPlayer::getPlayer).collect(Collectors.toList());
         for (Player player : playerList) {
             player.removePotionEffect(PotionEffectType.GLOWING);
 
@@ -87,7 +103,7 @@ public class NearbySelector implements Runnable, Listener {
         Map<Player, Integer> countMap = new HashMap<>();
         for (Player p : selected.values()){
             countMap.put(p, countMap.getOrDefault(p, 0) + 1);
-        };
+        }
 
         int currentCount = 0;
         Player mostCounts = null;
@@ -108,7 +124,6 @@ public class NearbySelector implements Runnable, Listener {
 
     @Override
     public void run() {
-        List<Player> selectables = game.getPlayerList().stream().map(WerewolfPlayer::getPlayer).filter(p -> !selectors.contains(p)).collect(Collectors.toList());
         selected.clear();
 
         for (Player selector : selectors) {
@@ -123,7 +138,10 @@ public class NearbySelector implements Runnable, Listener {
                 }
             }
 
-            selected.put(selector, mostNearby);
+            if(mostNearby != null) {
+                selected.put(selector, mostNearby);
+                selector.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder("You are selecing: ").append(mostNearby.getDisplayName()).color(ChatColor.AQUA).create());
+            }
         }
 
         for (Player selected : selected.values()) {
@@ -141,11 +159,17 @@ public class NearbySelector implements Runnable, Listener {
     @EventHandler
     public void onAttemptToMove(PlayerMoveEvent event){
         Player p = event.getPlayer();
-        if(!selectors.contains(p)) { // is it one of the targets that wants to run away, deny it
-            if(event.getFrom() != event.getTo()){
-                p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 100f, 1f);
+        if(game.getGameMaster().getPlayer() == p) return;
 
-                event.setCancelled(true);
+        if(game.getPlayerList(false).stream().map(WerewolfPlayer::getPlayer).anyMatch(player -> player == event.getPlayer())) {
+//            if(game.getGameMaster().getPlayer().equals(p)) return;
+
+            if (!selectors.contains(p)) { // is it one of the targets that wants to run away, deny it
+                if (event.getTo() != null && (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getZ() != event.getTo().getZ())){
+                    p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 100f, 1f);
+
+                    event.setCancelled(true);
+                }
             }
         }
     }

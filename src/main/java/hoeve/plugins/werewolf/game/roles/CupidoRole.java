@@ -1,7 +1,6 @@
 package hoeve.plugins.werewolf.game.roles;
 
 import hoeve.plugins.werewolf.game.EnumDeadType;
-import hoeve.plugins.werewolf.game.GameStatus;
 import hoeve.plugins.werewolf.game.WerewolfGame;
 import hoeve.plugins.werewolf.game.WerewolfPlayer;
 import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
@@ -11,7 +10,7 @@ import org.bukkit.ChatColor;
 /**
  * Created by DeStilleGast 7-4-2020
  */
-public class CupidoRole implements IRole {
+public class CupidoRole extends BaseRole {
 
     @Override
     public String getRoleName() {
@@ -30,17 +29,24 @@ public class CupidoRole implements IRole {
         return customWaiter;
     }
 
-    @Override
-    public void onGameStateChange(WerewolfGame game, WerewolfPlayer player, GameStatus status) {
-        switch (status) {
-            case STARTUP:
-                game.notifyPlayer(player, "You are " + getRoleName());
-
-        }
-    }
 
     @Override
-    public void onDead(WerewolfGame game, WerewolfPlayer meDied, WerewolfPlayer killedBy, EnumDeadType deadType) {
+    public String onDead(WerewolfGame game, WerewolfPlayer meDied, EnumDeadType deadType) {
         // maybe funny message about a couple if they are still alive, if dead sad message about how he lost
+        boolean lovedOneStillAlive = game.getPlayerList(false).stream().filter(WerewolfPlayer::isAlive).allMatch(wp -> wp.getLover() != null);
+        String originalMessage = super.onDead(game, meDied, deadType);
+
+
+        if(deadType == EnumDeadType.VOTE){
+            if(lovedOneStillAlive) {
+                return "With a good feeling about his choice, (s)he left the campfire";
+            }else{
+                return "With a bad feeling, (s)he felt guilty and has vanished quickly";
+            }
+        }else if(deadType == EnumDeadType.LEFT){
+            return "(s)he must have been feeling so bad because:";
+        }
+
+        return originalMessage;
     }
 }
