@@ -123,7 +123,8 @@ public class WerewolfGame implements Listener {
         plugin.getScoreboardManager().updateScoreboards(this);
         centerPlayers();
 
-        plugin.setupWaiter(1, 15, "Look around, make friends, it is a short day", this::startFirstNight);
+//        plugin.setupWaiter(1, 15, "Look around, make friends, it is a short day", this::startFirstNight);
+        plugin.setupWaiter(1, 15, "Kijk rond, maak vrienden, het is een kort dagje", this::startFirstNight);
 
 //        executeNewStatus();
     }
@@ -169,7 +170,8 @@ public class WerewolfGame implements Listener {
         plugin.getScoreboardManager().addPlayer(player);
 
         for (WerewolfPlayer wPlayer : getPlayerList(true)) {
-            notifyPlayer(wPlayer, player.getDisplayName() + " has joined the game.");
+//            notifyPlayer(wPlayer, player.getDisplayName() + " has joined the game.");
+            notifyPlayer(wPlayer, player.getDisplayName() + " doet mee met WeerWolven.");
         }
 
         return true;
@@ -324,12 +326,14 @@ public class WerewolfGame implements Listener {
 
     public void startFirstNight() {
         List<WerewolfPlayer> cupidos = getPlayersByRole(CupidoRole.class);
-        WaitTillAllReady allWaiter = plugin.setupWaiter(cupidos.size(), 30, "Waiting for cupido(s)", this::showLovedOneEachOther);
+//        WaitTillAllReady allWaiter = plugin.setupWaiter(cupidos.size(), 30, "Waiting for cupido(s)", this::showLovedOneEachOther);
+        WaitTillAllReady allWaiter = plugin.setupWaiter(cupidos.size(), 30, "Wachten op cupido", this::showLovedOneEachOther);
 
         updateStatus(GameStatus.CUPIDO);
         for (WerewolfPlayer cupido : cupidos) {
             CupidoScreen cupidoScreen = new CupidoScreen(this);
-            WaitTillAllReady waiter = plugin.setupWaiter(1, 30, "Waiting for cupido to shoot his arrows [%time%]", () -> {
+//            WaitTillAllReady waiter = plugin.setupWaiter(1, 30, "Waiting for cupido to shoot his arrows [%time%]", () -> {
+            WaitTillAllReady waiter = plugin.setupWaiter(1, 30, "Wacht op cupido totdat hij een koppel geselecteerd heeft [%time%]", () -> {
                 cupidoScreen.selectRandom(cupido.getPlayer());
                 allWaiter.markReady(cupido);
             });
@@ -352,7 +356,8 @@ public class WerewolfGame implements Listener {
         burgerVoteScreen = new BurgerVoteScreen(this);
 //        Bukkit.getPluginManager().registerEvents(burgerVoteScreen, plugin);
 
-        WaitTillAllReady burgerSelection = plugin.setupWaiter((int) playerList.stream().filter(WerewolfPlayer::isAlive).count(), 60, "Waiting for everyone to cast there vote [%time%]", () -> {
+//        WaitTillAllReady burgerSelection = plugin.setupWaiter((int) playerList.stream().filter(WerewolfPlayer::isAlive).count(), 60, "Waiting for everyone to cast there vote [%time%]", () -> {
+        WaitTillAllReady burgerSelection = plugin.setupWaiter((int) playerList.stream().filter(WerewolfPlayer::isAlive).count(), 60, "Wacht tot iedereen gestemd heeft [%time%]", () -> {
             burgerVoteScreen.closeInventory();
 
             Collection<String> voteList = burgerVoteScreen.getVoteMap().values();
@@ -373,7 +378,8 @@ public class WerewolfGame implements Listener {
                 String finalHighest = highest;
 
 //            deathTeller.newStory();
-                new BossBarTimer(plugin, highest + " has been voted for.", 10, () -> {
+//                new BossBarTimer(plugin, highest + " has been voted for", 10, () -> {
+                new BossBarTimer(plugin, highest + " heeft de meeste stemmen", 10, () -> {
                     WerewolfPlayer p = getPlayerByName(finalHighest);
                     if (p != null) {
                         deathTeller.addDeath(p.getPlayer(), EnumDeadType.VOTE);
@@ -382,7 +388,8 @@ public class WerewolfGame implements Listener {
                     this.tellDeathStory();
                 }, getPlayerList(true));
             } else {
-                new BossBarTimer(plugin, "Nobody has been voted for. So a random player will be selected", 10, () -> {
+//                new BossBarTimer(plugin, "Nobody has been voted for. So a random player will be selected", 10, () -> {
+                new BossBarTimer(plugin, "Er was voor niemand gestemd. Een willekeurige speler wordt gekozen", 10, () -> {
                     Random rnd = new Random();
                     WerewolfPlayer p = playerList.get(rnd.nextInt(playerList.size() - 1));
 
@@ -411,7 +418,8 @@ public class WerewolfGame implements Listener {
         if (burgerVoteScreen != null) {
             burgerVoteScreen.openInventory(player);
         } else {
-            notifyPlayer(player, "There is no vote active !");
+//            notifyPlayer(player, "There is no vote active !");
+            notifyPlayer(player, "Er is geen vote actief !");
         }
     }
 
@@ -422,7 +430,8 @@ public class WerewolfGame implements Listener {
         updateStatus(GameStatus.WEREWOLFVOTE);
 
         NearbySelector dinnerSelector = new NearbySelector(this, WerewolfRole.class);
-        plugin.setupWaiter(1, 30, "The wolves are selecting a player from the menu [%time%]", () -> {
+//        plugin.setupWaiter(1, 30, "The wolves are selecting a player from the menu [%time%]", () -> {
+        plugin.setupWaiter(1, 30, "De weerwolven zijn een speler aan het kiezen van het menu [%time%]", () -> {
             dinnerSelector.stop();
 
             wolvesHaveEaten(dinnerSelector);
@@ -432,15 +441,21 @@ public class WerewolfGame implements Listener {
 
         List<WerewolfPlayer> oracleList = getPlayersByRole(OracleRole.class);
         if(!oracleList.isEmpty()){
-            List<BaseScreen> screens = new ArrayList<>();
-            WaitTillAllReady oracleSelectors = plugin.setupWaiter(oracleList.size(), 30, "The oracle is looking in his glass boll", () -> { screens.forEach(BaseScreen::closeInventory); });
+            if(oracleList.stream().allMatch(WerewolfPlayer::isAlive)) {
+                List<BaseScreen> screens = new ArrayList<>();
+//            WaitTillAllReady oracleSelectors = plugin.setupWaiter(oracleList.size(), 30, "The oracle is looking in his glass boll", () -> { screens.forEach(BaseScreen::closeInventory); });
+                WaitTillAllReady oracleSelectors = plugin.setupWaiter(oracleList.size(), 30, "De ziener is aan het kijken", () -> {
+                    screens.forEach(BaseScreen::closeInventory);
+                });
 
-            for(WerewolfPlayer oracle : getPlayersByRole(OracleRole.class)){
-                if(!oracle.isAlive()) continue;
+                for (WerewolfPlayer oracle : getPlayersByRole(OracleRole.class)) {
+                    if (!oracle.isAlive()) continue;
 
-                OracleScreen oracleScreen = new OracleScreen(this);
-                oracleScreen.prepareInternalInventory(oracleSelectors);
-                oracleScreen.openInventory(oracle.getPlayer());
+                    OracleScreen oracleScreen = new OracleScreen(this);
+                    oracleScreen.prepareInternalInventory(oracleSelectors);
+                    oracleScreen.openInventory(oracle.getPlayer());
+                    screens.add(oracleScreen);
+                }
             }
         }
     }
@@ -449,12 +464,14 @@ public class WerewolfGame implements Listener {
     private void wolvesHaveEaten(NearbySelector selectorWolfs) {
         Player food = selectorWolfs.getTopSelectedPlayer();
         notifyGameMaster("Werewolves have selected to eat: " + food.getDisplayName());
-        notifyRole(WerewolfRole.class, "Selected target is: " + food.getDisplayName());
+//        notifyRole(WerewolfRole.class, "Selected target is: " + food.getDisplayName());
+        notifyRole(WerewolfRole.class, "Jullie hebben " + food.getDisplayName() + " opgegeten");
 
         deathTeller.addDeath(food, EnumDeadType.WOLVES);
 //        deaths.put(food, EnumDeadType.WOLVES);
 
-        new BossBarTimer(plugin, "Wolves have selected a target", 5, () -> {
+//        new BossBarTimer(plugin, "Wolves have selected a target", 5, () -> {
+        new BossBarTimer(plugin, "De weerwolven hebben lekker gegeten", 5, () -> {
             List<WerewolfPlayer> witchList = getPlayersByRole(WitchRole.class);
             if (!witchList.isEmpty()) {
                 updateStatus(GameStatus.WITCHACTIVITY);
@@ -465,10 +482,12 @@ public class WerewolfGame implements Listener {
                     for (WerewolfPlayer witch : witchList) {
                         if (witch.isAlive()) {
                             if (((WitchRole) witch.getRole()).hasElixer()) {
-                                AskScreen askScreen = new AskScreen(this, food.getName() + " has been killed, revive him ?");
+//                                AskScreen askScreen = new AskScreen(this, food.getName() + " has been killed, revive him ?");
+                                AskScreen askScreen = new AskScreen(this, food.getName() + " is opgegeten, wil je hem genezen ?");
                                 askScreen.openInventory(witch.getPlayer());
 
-                                askScreen.prepareInternalInventory(plugin.setupWaiter(1, 30, "It's now to the witch to see what she is going to do [%time%]", () -> {
+//                                askScreen.prepareInternalInventory(plugin.setupWaiter(1, 30, "It's now to the witch to see what she is going to do [%time%]", () -> {
+                                askScreen.prepareInternalInventory(plugin.setupWaiter(1, 30, "Wilt de heks de opgegeten persoon genezen ? [%time%]", () -> {
                                     askScreen.closeInventory();
 
                                     if (askScreen.saidYes) {
@@ -502,16 +521,19 @@ public class WerewolfGame implements Listener {
             WerewolfPlayer witch = witchList.get(0);
             WitchRole roleInfo = (WitchRole) witch.getRole();
             if (roleInfo.hasPoison()) {
-                AskScreen killSomeone = new AskScreen(this, "Would you like to kill someone");
+//                AskScreen killSomeone = new AskScreen(this, "Would you like to kill someone");
+                AskScreen killSomeone = new AskScreen(this, "Wil je iemand vermoorden");
                 killSomeone.openInventory(witch.getPlayer());
-                killSomeone.prepareInternalInventory(plugin.setupWaiter(1, 30, "Does the witch wants to kill someone [%time%]", () -> {
+//                killSomeone.prepareInternalInventory(plugin.setupWaiter(1, 30, "Does the witch wants to kill someone [%time%]", () -> {
+                killSomeone.prepareInternalInventory(plugin.setupWaiter(1, 30, "Wilt de heks iemand vermoorden [%time%]", () -> {
                     killSomeone.closeInventory();
 
                     if (killSomeone.saidYes) {
                         centerPlayers();
 
                         NearbySelector witchTarget = new NearbySelector(this, WitchRole.class);
-                        plugin.setupWaiter(1, 30, "The witch wants to kill someone [%time%]", () -> {
+//                        plugin.setupWaiter(1, 30, "The witch wants to kill someone [%time%]", () -> {
+                        plugin.setupWaiter(1, 30, "De heks wilt iemand vermoorden [%time%]", () -> {
                             witchTarget.stop();
 
                             roleInfo.consumePoison();
@@ -537,7 +559,8 @@ public class WerewolfGame implements Listener {
     private void theNightHasPassed() {
         updateStatus(GameStatus.DAY);
 
-        new BossBarTimer(plugin, "Everyone is waking up...", 10, this::tellDeathStory, getPlayerList(true));
+//        new BossBarTimer(plugin, "Everyone is waking up...", 10, this::tellDeathStory, getPlayerList(true));
+        new BossBarTimer(plugin, "Iedereen wordt wakker...", 10, this::tellDeathStory, getPlayerList(true));
     }
 
     private void tellDeathStory() {
@@ -585,9 +608,11 @@ public class WerewolfGame implements Listener {
             updateStatus(GameStatus.ENDED);
 
             for (WerewolfPlayer gamePlayer : getPlayerList(true)) {
-                notifyPlayer(gamePlayer, winningRole.getRoleName() + ChatColor.RESET + " [" + playerList.stream().filter(WerewolfPlayer::isAlive).map(w -> w.getPlayer().getDisplayName()).collect(Collectors.joining(", ")) + "] has won the game !");
+//                notifyPlayer(gamePlayer, winningRole.getRoleName() + ChatColor.RESET + " [" + playerList.stream().filter(WerewolfPlayer::isAlive).map(w -> w.getPlayer().getDisplayName()).collect(Collectors.joining(", ")) + "] has won the game !");
+                notifyPlayer(gamePlayer, winningRole.getRoleName() + ChatColor.RESET + " [" + playerList.stream().filter(WerewolfPlayer::isAlive).map(w -> w.getPlayer().getDisplayName()).collect(Collectors.joining(", ")) + "] hebben het spel gewonnen !");
                 if (lover != null) {
-                    notifyPlayer(gamePlayer, "But that is not everything, " + ChatColor.LIGHT_PURPLE + lover.getPlayer().getDisplayName() + ChatColor.RESET + " and " + ChatColor.LIGHT_PURPLE + lover.getLover().getPlayer().getDisplayName() + ChatColor.RESET + " were a couple and can life long and forever.");
+//                    notifyPlayer(gamePlayer, "But that is not everything, " + ChatColor.LIGHT_PURPLE + lover.getPlayer().getDisplayName() + ChatColor.RESET + " and " + ChatColor.LIGHT_PURPLE + lover.getLover().getPlayer().getDisplayName() + ChatColor.RESET + " were a couple and can life long and forever.");
+                    notifyPlayer(gamePlayer, "Maar dat is niet alles, " + ChatColor.LIGHT_PURPLE + lover.getPlayer().getDisplayName() + ChatColor.RESET + " and " + ChatColor.LIGHT_PURPLE + lover.getLover().getPlayer().getDisplayName() + ChatColor.RESET + " waren een koppel en leven nog lang en gelukkig.");
                 }
             }
 
@@ -595,11 +620,13 @@ public class WerewolfGame implements Listener {
         } else {
             for (WerewolfPlayer hunter : getPlayersByRole(HunterRole.class)) {
                 if (!hunter.isAlive() && !((HunterRole) hunter.getRole()).hasTakenRevenge()) {
-                    new BossBarTimer(this.plugin, "But after the announcement something wierd happend", 10, () -> {
+//                    new BossBarTimer(this.plugin, "But after the announcement something wierd happend", 10, () -> {
+                    new BossBarTimer(this.plugin, "Maar na de omroep gebeurd er iets raars...", 10, () -> {
                         NearbySelector hunterSelector = new NearbySelector(this, Collections.singletonList(hunter.getPlayer()));
                         hunterSelector.isEveryoneVisible = true;
 
-                        this.plugin.setupWaiter(1, 30, "The hunter is going to take revenge [%time%]", () -> {
+//                        this.plugin.setupWaiter(1, 30, "The hunter is going to take revenge [%time%]", () -> {
+                        this.plugin.setupWaiter(1, 30, "De jager is uit op vraak [%time%]", () -> {
                             hunterSelector.stop();
                             ((HunterRole) hunter.getRole()).setTakenRevenge();
 
