@@ -1,23 +1,34 @@
 package hoeve.plugins.werewolf.game;
 
+import hoeve.plugins.werewolf.game.helpers.WaitTillAllReady;
+import hoeve.plugins.werewolf.game.roles.IRole;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
 public class WerewolfPlayer {
-    String name = "";
-    String role = "None";
-    Boolean alive = true;
+
+//    String name = "";
+    private IRole role = null;
+    private Boolean alive = true;
+    private Player playerObject;
+
+    private WerewolfPlayer lover;
+
 
     public String getName() {
-        return name;
+        return playerObject.getName();
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+//    public void setName(String name) {
+//        this.name = name;
+//    }
 
-    public String getRole() {
+    public IRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(IRole role) {
         this.role = role;
     }
 
@@ -29,8 +40,34 @@ public class WerewolfPlayer {
         this.alive = alive;
     }
 
-    public WerewolfPlayer(String name) {
+    public WerewolfPlayer(Player player) {
+        this.playerObject = player;
+    }
 
-        this.name = name;
+    public Player getPlayer(){
+        return playerObject;
+    }
+
+//    public void onGameStart(WaitTillAllReady waiter){
+//        this.getRole().onGameStart(this, waiter);
+//    }
+
+    public void onGameStatusChange(WerewolfGame game, GameStatus status){
+        this.getRole().onGameStateChange(game, this, status);
+    }
+
+    public void onDead(WerewolfGame game, WerewolfPlayer killedBy, EnumDeadType deadType){
+        if(!this.isAlive()) return;
+        this.alive = false;
+
+        this.getRole().onDead(game, this, killedBy, deadType);
+
+        if(this.lover != null){
+            this.lover.onDead(game,this, EnumDeadType.LOVE);
+        }
+    }
+
+    public void setLover(WerewolfPlayer player) {
+        this.lover = player;
     }
 }
