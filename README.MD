@@ -4,6 +4,8 @@ Zo veel mogelijk getest bij mezelf en het heeft een werkende gameplay
 
 enigste bug die ik weet is dat de plugin niet altijd doorheeft dat het spel afgelopen is, je kan zelf een check activeren door `/ww test` uit te voeren
 
+Voor de gamemaster is het handig om OP te zijn of permissie `werewolf.gamemaster` te hebben
+
 Commands:
 De enigste commands die de kids hoeven te weten zijn:
 - /ww join
@@ -12,6 +14,9 @@ De enigste commands die de kids hoeven te weten zijn:
   - dit is om het spel te verlaten
 
 Als game master (die het tempo van het spel beheert):
+- /ww new
+  - Bereid een nieuw spel, na dit command kunnen andere spelers het spel joinen
+
 - /ww start
   - start een heel nieuw spel met de mensen die gejoined zijn
   
